@@ -1,0 +1,26 @@
+{
+"extends": ["react-app", "airbnb", "prettier", "prettier/react"],
+    "env": {
+      "browser": true,
+      "jest": true
+    },
+    "rules": {
+      "max-depth": ["warn", 4],
+      "id-length": [
+        "warn",
+        {
+          "exceptions": ["i", "j"],
+          "min": 2
+        }
+      ],
+      "no-plusplus": [
+        "error",
+        {
+          "allowForLoopAfterthoughts": true
+        }
+      ],
+      "react/state-in-constructor": ["off"],
+      "react/jsx-props-no-spreading": ["off"],
+      "curly": "error"
+    }
+}

@@ -1,20 +1,49 @@
 {
   "name": "blog-platform",
+  "homepage": "https://alexey-oblomov.github.io/blog-platform/",
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@material-ui/core": "^4.9.14",
+    "@material-ui/icons": "^4.9.1",
+    "@material-ui/lab": "^4.0.0-alpha.53",
     "@testing-library/jest-dom": "^4.2.4",
     "@testing-library/react": "^9.5.0",
     "@testing-library/user-event": "^7.2.1",
+    "antd": "^4.1.4",
+    "axios": "^0.19.2",
+    "body-parser": "^1.19.0",
+    "cors": "^2.8.5",
+    "date-fns": "^2.14.0",
+    "ejs": "^3.0.2",
+    "express": "^4.17.1",
+    "formik": "^2.1.4",
+    "gh-pages": "^2.2.0",
+    "node-sass": "^4.13.1",
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
-    "react-scripts": "3.4.1"
+    "react-redux": "^7.2.0",
+    "react-router-dom": "^5.2.0",
+    "react-scripts": "3.4.1",
+    "redux": "^4.0.5",
+    "redux-thunk": "^2.3.0",
+    "styled-components": "^5.1.0",
+    "yup": "^0.28.3"
   },
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
-    "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "predeploy": "npm run build",
+    "deploy": "gh-pages -d build",
+    "stylelint": "stylelint src/*.{css,scss,sass}",
+    "stylelint:fix": "stylelint src/*.{css,scss,sass} --fix",
+    "eslint": "eslint  src/*.{js,jsx}",
+    "eslint:fix": "eslint  src/*.{js,jsx} --fix",
+    "eslint:fix:layout": "eslint  src/*.{js,jsx} --fix --fix-type layout",
+    "lint": "npm run eslint & npm run stylelint",
+    "lint:fix": "npm run eslint:fix & npm run stylelint:fix",
+    "prettier": "prettier src/**/*.*",
+    "server": "node server/bin/www"
   },
   "eslintConfig": {
     "extends": "react-app"
@@ -29,6 +58,74 @@
       "last 1 chrome version",
       "last 1 firefox version",
       "last 1 safari version"
+    ]
+  },
+  "devDependencies": {
+    "eslint": "^6.8.0",
+    "eslint-config-airbnb": "^18.1.0",
+    "eslint-config-prettier": "^6.11.0",
+    "eslint-plugin-import": "^2.20.1",
+    "eslint-plugin-jsx-a11y": "^6.2.3",
+    "eslint-plugin-react": "^7.19.0",
+    "eslint-plugin-react-hooks": "^2.5.0",
+    "husky": "^4.2.5",
+    "lint-staged": "^10.2.2",
+    "prettier": "2.0.4",
+    "stylelint": "^13.3.2",
+    "stylelint-config-recommended": "^3.0.0"
+  },
+  "stylelint": {
+    "extends": "stylelint-config-recommended"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged"
+    }
+  },
+  "prettier": {
+    "overrides": [
+      {
+        "files": "src/**/*.{js,jsx,ts,tsx,json}",
+        "options": {
+          "arrowParens": "avoid",
+          "bracketSpacing": false,
+          "jsxBracketSameLine": false,
+          "jsxSingleQuote": false,
+          "printWidth": 100,
+          "proseWrap": "always",
+          "quoteProps": "as-needed",
+          "semi": true,
+          "singleQuote": true,
+          "tabWidth": 2,
+          "trailingComma": "es5",
+          "useTabs": false
+        }
+      },
+      {
+        "files": [
+          "src/**/*/{css,scss,sass,less}"
+        ],
+        "options": {
+          "bracketSpacing": true,
+          "printWidth": 80,
+          "singleQuote": false,
+          "tabWidth": 2,
+          "useTabs": false
+        }
+      }
+    ]
+  },
+  "lint-staged": {
+    "src/**/*.{css,scss,sass,less,js,jsx,json}": [
+      "prettier --write",
+      "git add"
+    ],
+    "src/**/*.{js,jsx}": [
+      "eslint --fix --fix-type layout",
+      "git add"
+    ],
+    "src/**/*.{css,scss,sass,less}": [
+      "stylelint"
     ]
   }
 }
