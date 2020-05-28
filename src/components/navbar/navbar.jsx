@@ -6,8 +6,8 @@ import MenuIcon from '@material-ui/icons/Menu';
 
 export function Navbar(props) {
   return (
-    <div className="test">
-      <AppBar position="static">
+    <div>
+      <AppBar position="static" style={{borderRadius: '10px'}}>
         <Toolbar>
           <IconButton edge="start" color="inherit" aria-label="menu" onClick={() => {}}>
             <MenuIcon />

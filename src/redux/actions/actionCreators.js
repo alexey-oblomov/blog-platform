@@ -1,17 +1,16 @@
 import {
   ARTICLES_LOADED,
   CURRENT_ARTICLE_LOADED,
-  AUTHORIZED,
-  SHOW_ALL,
-  SHOW_MY,
+  SET_AUTHORIZED,
+  SHOW_MODE,
   CURRENT_USER_PROFILE_LOAD,
   SET_CURRENT_MENU_ITEM,
 } from './actionTypes';
 
-export const articlesLoaded = (articles, articlesCount) => {
+export const articlesLoaded = (listArticles, articlesCount) => {
   return {
     type: ARTICLES_LOADED,
-    articles,
+    listArticles,
     articlesCount,
   };
 };
@@ -23,24 +22,17 @@ export const currentArticleLoaded = currentArticle => {
   };
 };
 
-export const authorized = isAutorized => {
+export const setAuthorized = isAuthorized => {
   return {
-    type: AUTHORIZED,
-    isAutorized,
+    type: SET_AUTHORIZED,
+    isAuthorized,
   };
 };
 
-export const showAll = () => {
+export const showMode = user => {
   return {
-    type: SHOW_ALL,
-    show: 'all',
-  };
-};
-
-export const showMy = () => {
-  return {
-    type: SHOW_MY,
-    show: 'my',
+    type: SHOW_MODE,
+    showMode: user,
   };
 };
 

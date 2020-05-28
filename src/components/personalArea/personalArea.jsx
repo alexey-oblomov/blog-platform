@@ -2,9 +2,8 @@ import React, {Component} from 'react';
 import styled from 'styled-components';
 import {
   articlesLoaded,
-  authorized,
-  showAll,
-  showMy,
+  setAuthorized,
+  showMode,
   getCurrentUserProfile,
   setCurrentMenuItem,
 } from '../../redux/actions/actionCreators';
@@ -15,18 +14,19 @@ import {Button} from '@material-ui/core';
 
 class PersonalArea extends Component {
   logout = () => {
-    const {authorization, history, setCurrentUser} = this.props;
+    const {authorization, history, setCurrentUser, setShowMode} = this.props;
     authorization(false);
     localStorage.clear();
     setCurrentUser({});
+    setShowMode('');
     history.push('/blog-platform/login');
   };
 
   getAllArticles = () => {
-    const {setShowAll, history, setCurrentMenuItem} = this.props;
+    const {setShowMode, history, setCurrentMenuItem} = this.props;
     const headers = makeHeadersForAuth();
     const {articlesLoaded} = this.props;
-    setShowAll();
+    setShowMode('');
     axios
       .get('https://conduit.productionready.io/api/articles?limit=9', {headers})
       .then(response => {
@@ -38,11 +38,11 @@ class PersonalArea extends Component {
   };
 
   getMyArticles = () => {
-    const {setShowMy, currentUser, history, setCurrentMenuItem} = this.props;
+    const {setShowMode, currentUser, history, setCurrentMenuItem} = this.props;
     const {username} = currentUser;
     const headers = makeHeadersForAuth();
     const {articlesLoaded} = this.props;
-    setShowMy();
+    setShowMode(currentUser.username);
     axios
       .get(`https://conduit.productionready.io/api/articles?limit=9&author=${username}`, {
         headers,
@@ -205,12 +205,12 @@ const WrapperDiv = styled.div`
 `;
 
 const mapStateToProps = state => {
-  const {articles, articlesCount, autorized, showAll, currentUser, currentMenuItem} = state;
+  const {articles, articlesCount, autorized, showMode, currentUser, currentMenuItem} = state;
   return {
     articles,
     articlesCount,
     autorized,
-    showAll,
+    showMode,
     currentUser,
     currentMenuItem,
   };
@@ -219,9 +219,8 @@ const mapStateToProps = state => {
 const mapDispatchToProps = dispatch => {
   return {
     articlesLoaded: (articles, articlesCount) => dispatch(articlesLoaded(articles, articlesCount)),
-    authorization: auth => dispatch(authorized(auth)),
-    setShowAll: () => dispatch(showAll()),
-    setShowMy: () => dispatch(showMy()),
+    authorization: auth => dispatch(setAuthorized(auth)),
+    setShowMode: user => dispatch(showMode(user)),
     setCurrentUser: currentUser => dispatch(getCurrentUserProfile(currentUser)),
     setCurrentMenuItem: currentMenuItem => dispatch(setCurrentMenuItem(currentMenuItem)),
   };

@@ -1,7 +1,7 @@
 import React, {Component} from 'react';
 import {connect} from 'react-redux';
 import axios from 'axios';
-import {makeHeadersForAuth, isAuth} from '../../utils/utils';
+import {makeHeadersForAuth} from '../../utils/utils';
 import {differenceInMinutes} from 'date-fns';
 import {Link} from 'react-router-dom';
 import styled from 'styled-components';
@@ -18,15 +18,14 @@ class Preview extends Component {
   };
 
   getArticleFromServer = () => {
-    const {slug} = this.props;
+    const {slug, isAutorized} = this.props;
     axios.get(`https://conduit.productionready.io/api/articles/${slug}`).then(response => {
       this.setState({
         article: response.data.article,
       });
     });
 
-    const auth = isAuth();
-    if (auth) {
+    if (isAutorized) {
       const headers = makeHeadersForAuth();
       axios
         .get(`https://conduit.productionready.io/api/articles/${slug}`, {headers})
@@ -81,17 +80,25 @@ class Preview extends Component {
   }
 
   render() {
-    const {slug, currentUser} = this.props;
+    const {slug, currentUser, isAuthorized} = this.props;
     const {article} = this.state;
     const {title, author, tagList, favoritesCount, createdAt, updatedAt, favorited} = article;
     const linkPath = `/blog-platform/articles/${slug}`;
-    const auth = isAuth();
     const isModifed = createdAt === updatedAt ? false : true;
+    const createdDate = (
+      <div>
+        <span style={{color: 'green', fontSize: '12px'}}>Создано: </span>
+        {differenceInMinutes(new Date(), new Date(createdAt))} минут назад
+      </div>
+    );
     const updateDate = isModifed ? (
-      <div>Изменено: {differenceInMinutes(new Date(), new Date(updatedAt))} минут назад</div>
+      <div>
+        <span style={{color: 'red', fontSize: '12px'}}>Изменено:</span>{' '}
+        {differenceInMinutes(new Date(), new Date(updatedAt))} минут назад
+      </div>
     ) : null;
 
-    const btnLike = auth ? (
+    const btnLike = isAuthorized ? (
       favorited ? (
         <Tooltip title="Убрать лайк">
           <FavoriteIcon
@@ -117,7 +124,7 @@ class Preview extends Component {
     );
 
     const btnDelete =
-      auth && currentUser.username === author.username ? (
+      isAuthorized && currentUser.username === author.username ? (
         <DeleteDiv>
           <Tooltip title="Удалить статью">
             <HighlightOffIcon style={{fontSize: 30}} />
@@ -162,9 +169,7 @@ class Preview extends Component {
           <Tooltip title="Перейти на страницу автора">
             <AuthorDiv>{author.username}</AuthorDiv>
           </Tooltip>
-          <CreatedAtDiv>
-            {differenceInMinutes(new Date(), new Date(createdAt))} минут назад
-          </CreatedAtDiv>
+          <CreatedAtDiv>{createdDate}</CreatedAtDiv>
           <UpdateAtDiv>{updateDate}</UpdateAtDiv>
         </div>
 
@@ -215,6 +220,7 @@ function mapStateToProps(state) {
   return {
     articles: state.articles,
     currentUser: state.currentUser,
+    isAuthorized: state.isAuthorized,
   };
 }
 

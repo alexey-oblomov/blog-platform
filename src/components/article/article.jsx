@@ -30,11 +30,12 @@ class Article extends Component {
   };
 
   componentDidMount() {
-    const {setCurrentMenuItemNull} = this.props;
-    this.getArticleFromServer();
-    setCurrentMenuItemNull('');
+    const {setCurrentMenuItemNull, isAutorized} = this.props;
+    if (isAutorized) {
+      this.getArticleFromServer();
+      setCurrentMenuItemNull('');
+    }
   }
-
   setUnlike = async () => {
     const {slug} = this.props.match.params;
     const headers = makeHeadersForAuth();
@@ -65,11 +66,17 @@ class Article extends Component {
   };
 
   render() {
-    const {currentArticle, history} = this.props;
+    const {currentArticle, history, isAuthorized} = this.props;
+    // const auth = isAuth();
+    // if (!isAutorized) {
+    //   history.push('/blog-platform/login');
+    // }
+    if (!isAuthorized) {
+      console.log('isAutorized ', isAuthorized);
+      history.push('/blog-platform/login');
+    }
     const {slug} = this.props.match.params;
     let {title, author, body, favorited, favoritesCount} = currentArticle;
-
-    console.log('typeof body ', typeof body);
     const btnLike = favorited ? (
       <FavoriteIcon
         className="btnLike"
@@ -86,13 +93,15 @@ class Article extends Component {
         onClick={event => this.toggleLike(event, slug, favorited)}
       />
     );
+
+    const leftAside = isAuthorized ? <PersonalArea history={history} /> : null;
     return (
       <>
         <br />
 
         <div style={{marginTop: '15px'}}>
           <div style={{display: 'flex', marginBottom: '15px'}}>
-            <PersonalArea history={history} />
+            {leftAside}
 
             <div
               style={{
@@ -144,6 +153,7 @@ class Article extends Component {
 function mapStateToProps(state) {
   return {
     currentArticle: state.currentArticle,
+    isAuthorized: state.isAuthorized,
   };
 }
 

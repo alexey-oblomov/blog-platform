@@ -1,10 +1,9 @@
 export const ARTICLES_LOADED = 'ARTICLES_LOADED';
 export const CURRENT_ARTICLE_LOADED = 'CURRENT_ARTICLE_LOADED';
 
-export const AUTHORIZED = 'AUTHORIZED';
+export const SET_AUTHORIZED = 'SET_AUTHORIZED';
 
-export const SHOW_ALL = 'SHOW_ALL';
-export const SHOW_MY = 'SHOW_MY';
+export const SHOW_MODE = 'SHOW_MODE';
 
 export const CURRENT_USER_PROFILE_LOAD = 'CURRENT_USER_PROFILE_LOAD';
 

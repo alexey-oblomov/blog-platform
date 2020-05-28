@@ -1,51 +1,64 @@
-import React from 'react';
+import React, {Component} from 'react';
 
 import axios from 'axios';
 import {connect} from 'react-redux';
-import {articlesLoaded} from '../../redux/actions/actionCreators';
-import {makeHeadersForAuth, isAuth} from '../../utils/utils';
+import {articlesLoaded, setCurrentMenuItem, showMode} from '../../redux/actions/actionCreators';
+import {
+  makeHeadersForAuth,
+  loadAllArticles,
+  loadUserArticles,
+  loadAllArticlesWithOffset,
+} from '../../utils/utils';
 import Preview from '../article/preview.jsx';
 import Pagination from '@material-ui/lab/Pagination';
 
-function ListArticles(props) {
-  const {articles, articlesCount, history, articlesLoaded} = props;
-  const listArticles = articles.map(item => {
-    const {slug, favorited} = item;
-    return (
-      <div key={slug} onClick={event => openArticle(event, slug)}>
-        <Preview slug={slug} favorited={favorited} />
-      </div>
-    );
-  });
+class ListArticles extends Component {
+  getListArticles = async () => {
+    const {showMode, showQuantity, setArticlesToState, currentUser, isAuthorized} = this.props;
+    const authHeaders = isAuthorized ? makeHeadersForAuth() : null;
 
-  const countPaginationBtns = Math.ceil(articlesCount / 9);
+    if (showMode === '') {
+      const response = await loadAllArticles(showQuantity, authHeaders);
+      const {articles, articlesCount} = await response.data;
+      setArticlesToState(articles, articlesCount);
+      setCurrentMenuItem('showAllArticles');
+    } else {
+      const response = loadUserArticles(showQuantity, showMode, authHeaders);
+      const {articles, articlesCount} = await response.data;
+      setArticlesToState(articles, articlesCount);
+      if (showMode === currentUser.username) {
+        setCurrentMenuItem('showMyArticles');
+      } else {
+        setCurrentMenuItem('');
+      }
+    }
+  };
 
-  const openArticle = (event, slug) => {
+  openArticle = (event, slug) => {
+    const {history} = this.props;
     const isBtnParentClassList = event.target.parentElement.classList.contains('btnLike');
     if (!isBtnParentClassList) {
       history.push(`/blog-platform/articles/${slug}`);
     }
   };
 
-  const handleChangePagination = event => {
-    const {show} = props;
+  handleChangePagination = event => {
+    const {showMode, setArticlesToState, isAuthorized, showQuantity} = this.props;
     const pageNumber = event.currentTarget.textContent;
     const numberSkipArticles = pageNumber * 9 - 9;
-    const username = localStorage.getItem('username');
+    const username = showMode;
     let offset = '';
     if (pageNumber > 1) {
-      offset = `&offset=${numberSkipArticles}`;
+      offset = numberSkipArticles;
     }
 
-    if (isAuth()) {
+    if (isAuthorized) {
       const headers = makeHeadersForAuth();
-      if (show === 'all') {
-        axios
-          .get(`https://conduit.productionready.io/api/articles?limit=9${offset}`, {headers})
-          .then(response => {
-            const {articles, articlesCount} = response.data;
-            articlesLoaded(articles, articlesCount);
-          });
+      if (showMode === '') {
+        loadAllArticlesWithOffset(showQuantity, offset, headers).then(response => {
+          const {articles, articlesCount} = response.data;
+          setArticlesToState(articles, articlesCount);
+        });
       } else {
         axios
           .get(
@@ -54,7 +67,7 @@ function ListArticles(props) {
           )
           .then(response => {
             const {articles, articlesCount} = response.data;
-            articlesLoaded(articles, articlesCount);
+            setArticlesToState(articles, articlesCount);
           });
       }
     } else {
@@ -62,54 +75,85 @@ function ListArticles(props) {
         .get(`https://conduit.productionready.io/api/articles?limit=9${offset}`)
         .then(response => {
           const {articles, articlesCount} = response.data;
-          articlesLoaded(articles, articlesCount);
+          setArticlesToState(articles, articlesCount);
         });
     }
   };
 
-  const propsPagination = {
-    count: countPaginationBtns,
-    variant: 'outlined',
-    shape: 'rounded',
-    onChange: handleChangePagination,
-    defaultPage: 1,
-    articles: articles,
-  };
+  componentDidMount() {
+    this.getListArticles();
+  }
 
-  return (
-    <div>
-      <div
-        className="listArticles"
-        style={{
-          display: 'flex',
-          minWidth: '1000px',
-          maxWidth: '1600px',
-          flexWrap: 'wrap',
-          marginBottom: '15px',
-        }}
-      >
-        {listArticles}
+  render() {
+    const {listArticles, articlesCount} = this.props;
+    const mapedListArticles = listArticles.map(item => {
+      const {slug} = item;
+      return (
+        <div key={slug} onClick={event => this.openArticle(event, slug)}>
+          <Preview slug={slug} />
+        </div>
+      );
+    });
+
+    const countPaginationBtns = Math.ceil(articlesCount / 9);
+    const propsPagination = {
+      count: countPaginationBtns,
+      variant: 'outlined',
+      shape: 'rounded',
+      onChange: this.handleChangePagination,
+      defaultPage: 1,
+      articles: listArticles,
+    };
+
+    return (
+      <div>
+        <div
+          className="listArticles"
+          style={{
+            display: 'flex',
+            minWidth: '1000px',
+            maxWidth: '1600px',
+            flexWrap: 'wrap',
+            marginBottom: '15px',
+          }}
+        >
+          {mapedListArticles}
+        </div>
+        <div style={{marginLeft: 'auto', marginRight: 'auto', maxWidth: '500px'}}>
+          <Pagination {...propsPagination} />
+        </div>
       </div>
-      <div style={{marginLeft: 'auto', marginRight: 'auto', maxWidth: '500px'}}>
-        <Pagination {...propsPagination} />
-      </div>
-    </div>
-  );
+    );
+  }
 }
 
 function mapStateToProps(state) {
-  const {articles, articlesCount, autorized, show} = state;
-  return {
-    articles,
+  const {
+    listArticles,
     articlesCount,
-    autorized,
-    show,
+    isAuthorized,
+    showMode,
+    currentUser,
+    currentMenuItem,
+    showQuantity,
+  } = state;
+  return {
+    listArticles,
+    articlesCount,
+    isAuthorized,
+    showMode,
+    currentUser,
+    currentMenuItem,
+    showQuantity,
   };
 }
 
 const mapDispatchToProps = dispatch => {
   return {
-    articlesLoaded: (articles, articlesCount) => dispatch(articlesLoaded(articles, articlesCount)),
+    setShowMode: user => dispatch(showMode(user)),
+    setArticlesToState: (listArticles, articlesCount) =>
+      dispatch(articlesLoaded(listArticles, articlesCount)),
+    setCurrentMenuItem: currentMenuItem => dispatch(setCurrentMenuItem(currentMenuItem)),
   };
 };
 

@@ -1,15 +1,14 @@
 import {
   ARTICLES_LOADED,
   CURRENT_ARTICLE_LOADED,
-  AUTHORIZED,
-  SHOW_ALL,
-  SHOW_MY,
+  SET_AUTHORIZED,
+  SHOW_MODE,
   CURRENT_USER_PROFILE_LOAD,
   SET_CURRENT_MENU_ITEM,
 } from '../actions/actionTypes';
 
 const initialState = {
-  articles: [],
+  listArticles: [],
   currentArticle: {
     title: null,
     author: {username: null},
@@ -18,33 +17,33 @@ const initialState = {
     favoritesCount: null,
   },
   articlesCount: 0,
-  isAutorized: false,
-  show: 'all',
+  isAuthorized: false,
+  showMode: '',
   currentUser: {},
   currentMenuItem: null,
+  showQuantity: 9,
 };
 
 export default function rootReducer(state = initialState, action) {
   const {
     type,
-    articles,
+    listArticles,
     articlesCount,
     currentArticle,
-    isAutorized,
+    isAuthorized,
     currentUser,
     currentMenuItem,
+    showMode,
   } = action;
   switch (type) {
     case ARTICLES_LOADED:
-      return Object.assign({}, state, {articles, articlesCount});
+      return Object.assign({}, state, {listArticles, articlesCount});
     case CURRENT_ARTICLE_LOADED:
       return Object.assign({}, state, {currentArticle});
-    case AUTHORIZED:
-      return Object.assign({}, state, {isAutorized});
-    case SHOW_ALL:
-      return Object.assign({}, state, {show: 'all'});
-    case SHOW_MY:
-      return Object.assign({}, state, {show: 'my'});
+    case SET_AUTHORIZED:
+      return Object.assign({}, state, {isAuthorized});
+    case SHOW_MODE:
+      return Object.assign({}, state, {showMode});
     case CURRENT_USER_PROFILE_LOAD:
       return Object.assign({}, state, {currentUser});
     case SET_CURRENT_MENU_ITEM:

@@ -2,6 +2,7 @@ import React from 'react';
 import './App.css';
 import {connect} from 'react-redux';
 import {Route} from 'react-router-dom';
+
 import Home from './components/home/home.jsx';
 import Signup from './components/signup/signup.jsx';
 import Login from './components/login/login.jsx';
@@ -9,9 +10,18 @@ import Article from './components/article/article.jsx';
 import {Add} from './components/add/add.jsx';
 import Edit from './components/edit/edit.jsx';
 import {Navbar} from './components/navbar/navbar.jsx';
-import {articlesLoaded, authorized, showAll} from './redux/actions/actionCreators';
 
-function App() {
+import {setAuthorized} from './redux/actions/actionCreators';
+import {isAuth} from './utils/utils.js';
+
+function App(props) {
+  const {setAuth} = props;
+  if (isAuth()) {
+    setAuth(true);
+  } else {
+    setAuth(false);
+  }
+
   return (
     <div className="app">
       <Navbar />
@@ -25,23 +35,10 @@ function App() {
   );
 }
 
-function mapStateToProps(state) {
-  const {articles, articlesCount, autorized, showAll, currentUser} = state;
-  return {
-    articles,
-    articlesCount,
-    autorized,
-    showAll,
-    currentUser,
-  };
-}
-
 const mapDispatchToProps = dispatch => {
   return {
-    articlesLoaded: (articles, articlesCount) => dispatch(articlesLoaded(articles, articlesCount)),
-    authorization: auth => dispatch(authorized(auth)),
-    setShowAll: () => dispatch(showAll()),
+    setAuth: auth => dispatch(setAuthorized(auth)),
   };
 };
 
-export default connect(mapStateToProps, mapDispatchToProps)(App);
+export default connect(null, mapDispatchToProps)(App);
