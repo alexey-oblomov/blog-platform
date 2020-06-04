@@ -1,7 +1,8 @@
 import React from 'react';
+import {connect} from 'react-redux';
 import styled from 'styled-components';
 import {Link} from 'react-router-dom';
-import {connect} from 'react-redux';
+
 import {Formik, Form, Field} from 'formik';
 
 import {Button} from '@material-ui/core';
@@ -9,11 +10,11 @@ import TextField from '@material-ui/core/TextField';
 
 import {
   setAuthorized,
-  getCurrentUserProfile,
+  setCurrentUserProfile,
   setCurrentMenuItem,
 } from '../../redux/actions/actionCreators';
 import CustomizedInputPassword from '../inputPassword/inputPassword';
-import {serverAuthorization} from '../../utils/utils';
+import {serverAuthorization} from '../../utils/api';
 
 function LoginForm(props) {
   const initialValues = {
@@ -47,6 +48,7 @@ function LoginForm(props) {
       setFieldError('password', ' ');
     }
   };
+
   const setLoginDataToLocalStorage = data => {
     const {token} = data;
     localStorage.setItem('token', token);
@@ -120,7 +122,7 @@ function LoginForm(props) {
 const mapDispatchToProps = dispatch => {
   return {
     setAuth: auth => dispatch(setAuthorized(auth)),
-    setCurrentUser: user => dispatch(getCurrentUserProfile(user)),
+    setCurrentUser: user => dispatch(setCurrentUserProfile(user)),
     setCurrentMenuItem: currentMenuItem => dispatch(setCurrentMenuItem(currentMenuItem)),
   };
 };

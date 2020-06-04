@@ -22,17 +22,18 @@ function Home(props) {
   );
 }
 
+const WrapDiv = styled.div`
+  display: flex;
+  margin-bottom: 15px;
+  margin-top: 20px;
+  min-height: 800px;
+`;
+
 function mapStateToProps(state) {
   const {isAuthorized} = state;
   return {
     isAuthorized,
   };
 }
-
-const WrapDiv = styled.div`
-  display: flex;
-  margin-bottom: 15px;
-  margin-top: 20px;
-`;
 
 export default connect(mapStateToProps)(Home);

@@ -5,23 +5,18 @@ import {
   SHOW_MODE,
   CURRENT_USER_PROFILE_LOAD,
   SET_CURRENT_MENU_ITEM,
+  SET_CURRENT_PAGE,
 } from '../actions/actionTypes';
 
 const initialState = {
   listArticles: [],
-  currentArticle: {
-    title: null,
-    author: {username: null},
-    body: null,
-    favorited: null,
-    favoritesCount: null,
-  },
   articlesCount: 0,
   isAuthorized: false,
   showMode: '',
   currentUser: {},
   currentMenuItem: null,
   showQuantity: 9,
+  currentPage: 1,
 };
 
 export default function rootReducer(state = initialState, action) {
@@ -34,6 +29,7 @@ export default function rootReducer(state = initialState, action) {
     currentUser,
     currentMenuItem,
     showMode,
+    currentPage,
   } = action;
   switch (type) {
     case ARTICLES_LOADED:
@@ -48,6 +44,8 @@ export default function rootReducer(state = initialState, action) {
       return Object.assign({}, state, {currentUser});
     case SET_CURRENT_MENU_ITEM:
       return Object.assign({}, state, {currentMenuItem});
+    case SET_CURRENT_PAGE:
+      return Object.assign({}, state, {currentPage});
     default:
       return state;
   }

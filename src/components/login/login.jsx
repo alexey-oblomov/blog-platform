@@ -29,9 +29,10 @@ function mapStateToProps(state) {
   };
 }
 
+export default connect(mapStateToProps)(Login);
+
 const WrapDiv = styled.div`
   display: flex;
   margin-bottom: 15px;
   margin-top: 20px;
 `;
-export default connect(mapStateToProps)(Login);

@@ -5,6 +5,7 @@ import {
   SHOW_MODE,
   CURRENT_USER_PROFILE_LOAD,
   SET_CURRENT_MENU_ITEM,
+  SET_CURRENT_PAGE,
 } from './actionTypes';
 
 export const articlesLoaded = (listArticles, articlesCount) => {
@@ -36,7 +37,7 @@ export const showMode = user => {
   };
 };
 
-export const getCurrentUserProfile = currentUser => {
+export const setCurrentUserProfile = currentUser => {
   return {
     type: CURRENT_USER_PROFILE_LOAD,
     currentUser,
@@ -47,5 +48,12 @@ export const setCurrentMenuItem = currentMenuItem => {
   return {
     type: SET_CURRENT_MENU_ITEM,
     currentMenuItem,
+  };
+};
+
+export const setCurrentPage = currentPage => {
+  return {
+    type: SET_CURRENT_PAGE,
+    currentPage,
   };
 };

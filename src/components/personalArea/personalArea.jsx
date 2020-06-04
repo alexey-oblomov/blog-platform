@@ -4,11 +4,10 @@ import {
   articlesLoaded,
   setAuthorized,
   showMode,
-  getCurrentUserProfile,
+  setCurrentUserProfile,
   setCurrentMenuItem,
 } from '../../redux/actions/actionCreators';
-import axios from 'axios';
-import {makeHeadersForAuth} from '../../utils/utils';
+import {makeHeadersForAuth, getCurrentUser} from '../../utils/api';
 import {connect} from 'react-redux';
 import {Button} from '@material-ui/core';
 
@@ -22,37 +21,18 @@ class PersonalArea extends Component {
     history.push('/blog-platform/login');
   };
 
-  getAllArticles = () => {
+  getAllArticles = async () => {
     const {setShowMode, history, setCurrentMenuItem} = this.props;
-    const headers = makeHeadersForAuth();
-    const {articlesLoaded} = this.props;
     setShowMode('');
-    axios
-      .get('https://conduit.productionready.io/api/articles?limit=9', {headers})
-      .then(response => {
-        const {articles, articlesCount} = response.data;
-        articlesLoaded(articles, articlesCount);
-        setCurrentMenuItem('showAllArticles');
-        history.push('/blog-platform');
-      });
+    setCurrentMenuItem('showAllArticles');
+    history.push('/blog-platform/login');
   };
 
-  getMyArticles = () => {
+  getMyArticles = async () => {
     const {setShowMode, currentUser, history, setCurrentMenuItem} = this.props;
-    const {username} = currentUser;
-    const headers = makeHeadersForAuth();
-    const {articlesLoaded} = this.props;
     setShowMode(currentUser.username);
-    axios
-      .get(`https://conduit.productionready.io/api/articles?limit=9&author=${username}`, {
-        headers,
-      })
-      .then(response => {
-        const {articles, articlesCount} = response.data;
-        articlesLoaded(articles, articlesCount);
-        history.push('/blog-platform');
-        setCurrentMenuItem('showMyArticles');
-      });
+    setCurrentMenuItem('showMyArticles');
+    history.push('/blog-platform/login');
   };
 
   addArticle = () => {
@@ -61,21 +41,16 @@ class PersonalArea extends Component {
     history.push('/blog-platform/add');
   };
 
-  getProfileUser = async () => {
+  getCurrentUserProfile = async () => {
     const {setCurrentUser} = this.props;
     const headers = makeHeadersForAuth();
-    await axios
-      .get(`https://conduit.productionready.io/api/user`, {
-        headers,
-      })
-      .then(response => {
-        const {user} = response.data;
-        setCurrentUser(user);
-      });
+    const response = await getCurrentUser(headers);
+    const {user} = await response.data;
+    setCurrentUser(user);
   };
 
   componentDidMount() {
-    this.getProfileUser();
+    this.getCurrentUserProfile();
   }
 
   render() {
@@ -87,73 +62,24 @@ class PersonalArea extends Component {
       width: '275px',
       marginBottom: '7px',
     };
-    let {image, username, email, bio} = this.props.currentUser;
-    if (image === null) {
-      image = 'https://static.productionready.io/images/smiley-cyrus.jpg';
-    }
-    if (bio === null) {
-      bio = 'Хороший тамада, провожу интересные конкурсы';
-    }
+    const {image, username, email, bio} = this.props.currentUser;
+    const avatarImage =
+      image === null ? 'https://static.productionready.io/images/smiley-cyrus.jpg' : image;
+    const info = bio === null ? 'Нет данных' : bio;
     return (
-      <div
-        style={{
-          minHeight: '800px',
-          border: '1px solid gray',
-          borderRadius: '10px',
-          boxShadow: '0 0 6px 0 #34495e',
-          padding: '12px',
-          maxWidth: '300px',
-          margin: '5px',
-          marginRight: '15px',
-          marginTop: '6px',
-        }}
-      >
-        <div
-          style={{
-            width: '275px',
-            marginBottom: '5px',
-            textAlign: 'center',
-          }}
-        >
-          Личный кабинет
-        </div>
-        <div
-          style={{
-            border: '1px solid gray',
-            borderRadius: '10px',
-            padding: '12px',
-            marginBottom: '30px',
-            marginTop: '15px',
-            backgroundColor: '#e0e0e0',
-          }}
-        >
-          <div style={{display: 'flex', flexDirection: 'column'}}>
-            <div style={{display: 'flex'}}>
-              <div>
-                <img
-                  src={image}
-                  alt=""
-                  style={{
-                    display: 'block',
-                    backgroundColor: 'white',
-                    width: '100px',
-                    height: '100px',
-                    borderRadius: '10px',
-                    marginBottom: '5px',
-                  }}
-                />
-              </div>
-              <div style={{padding: '10px', paddingTop: '5px'}}>
-                <div style={{marginBottom: '10px'}}>
-                  {username} ({email})
-                </div>
-              </div>
-            </div>
-            <div style={{padding: '8px'}}>"{bio}"</div>
-          </div>
-        </div>
+      <ContainerDiv>
+        <HeadingDiv>Личный кабинет</HeadingDiv>
+        <UserInfoBlock>
+          <UserInfoMainSection>
+            <UserImg src={avatarImage} alt="" />
+            <UserNameAndEmailBlock>
+              {username} ({email})
+            </UserNameAndEmailBlock>
+          </UserInfoMainSection>
+          <UserBioDiv>Информация: {info}</UserBioDiv>
+        </UserInfoBlock>
 
-        <WrapperDiv>
+        <ButtonBlockiv>
           <Button
             variant="contained"
             size="small"
@@ -193,24 +119,16 @@ class PersonalArea extends Component {
           >
             Выход
           </Button>
-        </WrapperDiv>
-      </div>
+        </ButtonBlockiv>
+      </ContainerDiv>
     );
   }
 }
 
-const WrapperDiv = styled.div`
-  display: flex;
-  flex-direction: column;
-`;
-
 const mapStateToProps = state => {
-  const {articles, articlesCount, autorized, showMode, currentUser, currentMenuItem} = state;
+  const {showQuantity, currentUser, currentMenuItem} = state;
   return {
-    articles,
-    articlesCount,
-    autorized,
-    showMode,
+    showQuantity,
     currentUser,
     currentMenuItem,
   };
@@ -218,12 +136,69 @@ const mapStateToProps = state => {
 
 const mapDispatchToProps = dispatch => {
   return {
-    articlesLoaded: (articles, articlesCount) => dispatch(articlesLoaded(articles, articlesCount)),
+    setArticlesToStore: (articles, articlesCount) =>
+      dispatch(articlesLoaded(articles, articlesCount)),
     authorization: auth => dispatch(setAuthorized(auth)),
     setShowMode: user => dispatch(showMode(user)),
-    setCurrentUser: currentUser => dispatch(getCurrentUserProfile(currentUser)),
+    setCurrentUser: currentUser => dispatch(setCurrentUserProfile(currentUser)),
     setCurrentMenuItem: currentMenuItem => dispatch(setCurrentMenuItem(currentMenuItem)),
   };
 };
 
 export default connect(mapStateToProps, mapDispatchToProps)(PersonalArea);
+
+const ContainerDiv = styled.div`
+  min-height: 800px;
+  border: 1px solid gray;
+  border-radius: 10px;
+  box-shadow: 0 0 6px 0 #34495e;
+  padding: 12px;
+  min-width: 300px;
+  margin: 5px;
+  margin-right: 15px;
+  margin-top: 6px;
+`;
+
+const HeadingDiv = styled.div`
+  margin-bottom: 20px;
+  text-align: center;
+`;
+
+const UserBioDiv = styled.div`
+  padding: 8px;
+`;
+
+const UserInfoBlock = styled.div`
+  border: 1px solid gray;
+  border-radius: 10px;
+  padding: 12px;
+  margin-bottom: 30px;
+  margin-top: 15px;
+  background-color: #e0e0e0;
+  display: flex;
+  flex-direction: column;
+`;
+
+const UserImg = styled.img`
+  display: block;
+  background-color: white;
+  width: 100px;
+  height: 100px;
+  border-radius: 10px;
+  margin-bottom: 5px;
+`;
+
+const UserInfoMainSection = styled.div`
+  display: flex;
+`;
+
+const UserNameAndEmailBlock = styled.div`
+  padding: 10px;
+  padding-top: 5px;
+  margin-bottom: 10px;
+`;
+
+const ButtonBlockiv = styled.div`
+  display: flex;
+  flex-direction: column;
+`;

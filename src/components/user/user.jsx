@@ -4,22 +4,23 @@ import {connect} from 'react-redux';
 
 import PersonalArea from '../personalArea/personalArea.jsx';
 import LoginForm from '../login/loginForm.jsx';
-import ArticleFullVersion from './articleFullVersion';
+import UserProfile from './userProfile.jsx';
 
-function ArticlePage(props) {
-  const {slug} = props.match.params;
+function UserPage(props) {
+  const {username} = props.match.params;
   const {history, isAuthorized} = props;
 
-  const propsArticleFullVersion = {
+  const propsArticleUserProfile = {
     history,
-    slug,
+    username,
   };
+
   const leftBlock = isAuthorized ? (
     <PersonalArea history={history} />
   ) : (
     <LoginForm history={history} />
   );
-  const mainBlock = <ArticleFullVersion {...propsArticleFullVersion} />;
+  const mainBlock = <UserProfile {...propsArticleUserProfile} />;
 
   return (
     <WrapDiv>
@@ -43,4 +44,4 @@ const WrapDiv = styled.div`
   min-height: 800px;
 `;
 
-export default connect(mapStateToProps)(ArticlePage);
+export default connect(mapStateToProps)(UserPage);

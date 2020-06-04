@@ -1,7 +1,7 @@
 import React from 'react';
+import {connect} from 'react-redux';
 import styled from 'styled-components';
 import {Link} from 'react-router-dom';
-import {connect} from 'react-redux';
 import {Formik, Form, Field} from 'formik';
 import * as Yup from 'yup';
 
@@ -9,11 +9,12 @@ import {Button} from '@material-ui/core';
 import TextField from '@material-ui/core/TextField';
 import {
   setAuthorized,
-  getCurrentUserProfile,
+  setCurrentUserProfile,
   setCurrentMenuItem,
 } from '../../redux/actions/actionCreators';
 import CustomizedInputPassword from '../inputPassword/inputPassword';
-import {serverAuthorization, serverRegistration} from '../../utils/utils';
+
+import {serverAuthorization, serverRegistration} from '../../utils/api';
 
 const SignUpSchema = Yup.object().shape({
   name: Yup.string().required('Обязательное поле'),
@@ -65,6 +66,7 @@ function SignupForm(props) {
       setFieldError('password', error.response.data.errors.password);
     }
   };
+
   const setLoginDataToLocalStorage = data => {
     const {token} = data;
     localStorage.setItem('token', token);
@@ -170,7 +172,7 @@ function mapStateToProps(state) {
 const mapDispatchToProps = dispatch => {
   return {
     setAuth: auth => dispatch(setAuthorized(auth)),
-    setCurrentUser: user => dispatch(getCurrentUserProfile(user)),
+    setCurrentUser: user => dispatch(setCurrentUserProfile(user)),
     setCurrentMenuItem: currentMenuItem => dispatch(setCurrentMenuItem(currentMenuItem)),
   };
 };
