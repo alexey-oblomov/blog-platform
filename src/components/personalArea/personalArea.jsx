@@ -5,39 +5,38 @@ import {
   setAuthorized,
   showMode,
   setCurrentUserProfile,
-  setCurrentMenuItem,
 } from '../../redux/actions/actionCreators';
-import {makeHeadersForAuth, getCurrentUser} from '../../utils/api';
+import {makeHeadersForAuth, getCurrentUser} from '../../services/api';
 import {connect} from 'react-redux';
 import {Button} from '@material-ui/core';
 
 class PersonalArea extends Component {
   logout = () => {
-    const {authorization, history, setCurrentUser, setShowMode} = this.props;
+    const {authorization, history, setCurrentUser, setShowMode, setArticlesToStore} = this.props;
     authorization(false);
     localStorage.clear();
     setCurrentUser({});
     setShowMode('');
+    setArticlesToStore([], 0);
     history.push('/blog-platform/login');
   };
 
   getAllArticles = async () => {
-    const {setShowMode, history, setCurrentMenuItem} = this.props;
-    setShowMode('');
-    setCurrentMenuItem('showAllArticles');
+    const {setShowMode, history, setArticlesToStore} = this.props;
+    setShowMode('allArticles');
+    setArticlesToStore([], 0);
     history.push('/blog-platform/login');
   };
 
   getMyArticles = async () => {
-    const {setShowMode, currentUser, history, setCurrentMenuItem} = this.props;
+    const {setShowMode, currentUser, history, setArticlesToStore} = this.props;
     setShowMode(currentUser.username);
-    setCurrentMenuItem('showMyArticles');
+    setArticlesToStore([], 0);
     history.push('/blog-platform/login');
   };
 
   addArticle = () => {
-    const {history, setCurrentMenuItem} = this.props;
-    setCurrentMenuItem('addArticle');
+    const {history} = this.props;
     history.push('/blog-platform/add');
   };
 
@@ -54,7 +53,7 @@ class PersonalArea extends Component {
   }
 
   render() {
-    const {currentMenuItem} = this.props;
+    const {currentPage} = this.props;
     const notActiveStyle = {width: '275px', marginBottom: '7px'};
     const activeStyle = {
       border: '1px solid gray',
@@ -85,7 +84,7 @@ class PersonalArea extends Component {
             size="small"
             onClick={this.getAllArticles}
             className="active"
-            style={currentMenuItem === 'showAllArticles' ? activeStyle : notActiveStyle}
+            style={currentPage === 'showAllArticles' ? activeStyle : notActiveStyle}
           >
             Показать все статьи
           </Button>
@@ -93,7 +92,7 @@ class PersonalArea extends Component {
             variant="contained"
             size="small"
             onClick={this.getMyArticles}
-            style={currentMenuItem === 'showMyArticles' ? activeStyle : notActiveStyle}
+            style={currentPage === 'showMyArticles' ? activeStyle : notActiveStyle}
           >
             Показать все мои статьи
           </Button>
@@ -102,7 +101,7 @@ class PersonalArea extends Component {
             variant="contained"
             size="small"
             onClick={this.addArticle}
-            style={currentMenuItem === 'addArticle' ? activeStyle : notActiveStyle}
+            style={currentPage === 'addArticle' ? activeStyle : notActiveStyle}
           >
             Добавить статью
           </Button>
@@ -126,11 +125,11 @@ class PersonalArea extends Component {
 }
 
 const mapStateToProps = state => {
-  const {showQuantity, currentUser, currentMenuItem} = state;
+  const {showQuantity, currentUser, currentPage} = state;
   return {
     showQuantity,
     currentUser,
-    currentMenuItem,
+    currentPage,
   };
 };
 
@@ -141,7 +140,6 @@ const mapDispatchToProps = dispatch => {
     authorization: auth => dispatch(setAuthorized(auth)),
     setShowMode: user => dispatch(showMode(user)),
     setCurrentUser: currentUser => dispatch(setCurrentUserProfile(currentUser)),
-    setCurrentMenuItem: currentMenuItem => dispatch(setCurrentMenuItem(currentMenuItem)),
   };
 };
 

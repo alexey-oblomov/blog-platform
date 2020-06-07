@@ -1,17 +1,17 @@
 import React, {Component} from 'react';
 import styled from 'styled-components';
 import {connect} from 'react-redux';
+import {uniqueId} from 'lodash';
 
-import {setCurrentMenuItem, articlesLoaded} from '../../redux/actions/actionCreators';
-
+import {articlesLoaded, setCurrentPage} from '../../redux/actions/actionCreators';
 import {
   makeHeadersForAuth,
   loadArticle,
   likeIt,
   unLikeIt,
   deleteArticleFromServer,
-} from '../../utils/api';
-import {uniqueId} from 'lodash';
+} from '../../services/api';
+
 import FavoriteBorderIcon from '@material-ui/icons/FavoriteBorder';
 import FavoriteIcon from '@material-ui/icons/Favorite';
 import {Button} from '@material-ui/core';
@@ -81,10 +81,10 @@ class ArticleFullVersion extends Component {
   };
 
   componentDidMount() {
-    const {setCurrentMenuItem, isAuthorized} = this.props;
+    const {setCurrentPage, isAuthorized} = this.props;
     const authHeaders = isAuthorized ? makeHeadersForAuth() : null;
     this.getArticleFromServer(authHeaders);
-    setCurrentMenuItem('');
+    setCurrentPage('');
   }
 
   render() {
@@ -258,7 +258,7 @@ const mapDispatchToProps = dispatch => {
   return {
     setArticlesToState: (listArticles, articlesCount) =>
       dispatch(articlesLoaded(listArticles, articlesCount)),
-    setCurrentMenuItem: value => dispatch(setCurrentMenuItem(value)),
+    setCurrentPage: page => dispatch(setCurrentPage(page)),
   };
 };
 

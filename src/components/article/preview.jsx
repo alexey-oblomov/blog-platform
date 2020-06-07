@@ -6,11 +6,11 @@ import {
   likeIt,
   unLikeIt,
   deleteArticleFromServer,
-} from '../../utils/api';
+} from '../../services/api';
 
 import {uniqueId} from 'lodash';
 import {articlesLoaded} from '../../redux/actions/actionCreators';
-import {differenceInMinutes} from 'date-fns';
+import {differenceInMinutes, differenceInHours, differenceInDays} from 'date-fns';
 import {Link} from 'react-router-dom';
 import styled from 'styled-components';
 import HighlightOffIcon from '@material-ui/icons/HighlightOff';
@@ -19,10 +19,14 @@ import FavoriteIcon from '@material-ui/icons/Favorite';
 import Tooltip from '@material-ui/core/Tooltip';
 import Chip from '@material-ui/core/Chip';
 import Paper from '@material-ui/core/Paper';
+import Skeleton from '@material-ui/lab/Skeleton';
+
 class Preview extends Component {
   state = {
     article: {
       tagList: [],
+      createdAt: '',
+      updatedAt: '',
       author: {username: ''},
     },
   };
@@ -80,7 +84,8 @@ class Preview extends Component {
   };
 
   toUserPage = user => {
-    const {history} = this.props;
+    const {history, setArticlesToState} = this.props;
+    setArticlesToState([], 0);
     history.push(`/blog-platform/user/${user}`);
   };
 
@@ -111,18 +116,46 @@ class Preview extends Component {
       );
     });
 
-    const createdDate = (
-      <div>
-        <span style={{color: 'green', fontSize: '12px'}}>Создано: </span>
-        {differenceInMinutes(new Date(), new Date(createdAt))} минут назад
-      </div>
-    );
-    const updateDate = isModifed ? (
-      <div>
-        <span style={{color: 'red', fontSize: '12px'}}>Изменено:</span>
-        {differenceInMinutes(new Date(), new Date(updatedAt))} минут назад
-      </div>
-    ) : null;
+    const diffDateCreate = date => {
+      let minutes, hours, days;
+      minutes = differenceInMinutes(new Date(), new Date(date));
+      const showMinutes = minutes === 0 ? 'только что' : `${minutes} мин назад`;
+      if (minutes >= 60) {
+        hours = differenceInHours(new Date(), new Date(date));
+        const showMinutes = minutes === 0 ? '' : `${minutes - hours * 60} мин`;
+        if (hours >= 24) {
+          days = differenceInDays(new Date(), new Date(date));
+          const showDays = `${days} дн`;
+          const showHours = hours === 0 && minutes === 0 ? '' : `${hours - days * 24} ч`;
+          return `${showDays} ${showHours}  ${showMinutes} назад`;
+        }
+        return `${hours} ч ${showMinutes} назад`;
+      }
+      return `${showMinutes}`;
+    };
+
+    const createDate = diffDateCreate(createdAt);
+    const updDate = diffDateCreate(updatedAt);
+
+    const createdDate =
+      createdAt === '' ? (
+        <Skeleton animation="wave" variant="text" />
+      ) : (
+        <div>
+          <GreenTextStyle>Создано: </GreenTextStyle>
+          {createDate}
+        </div>
+      );
+
+    const updateDate =
+      updatedAt === '' ? (
+        <Skeleton animation="wave" variant="text" />
+      ) : isModifed ? (
+        <div>
+          <UpdateDateSpan>Изменено:</UpdateDateSpan>
+          {updDate}
+        </div>
+      ) : null;
 
     const btnLike = isAuthorized ? (
       favorited ? (
@@ -165,15 +198,26 @@ class Preview extends Component {
     return (
       <PreviewDiv>
         <HeaderDiv>
-          <TitleDiv>{title}</TitleDiv>
-          <DeleteDiv>{btnDelete}</DeleteDiv>
+          {title ? (
+            <>
+              <TitleDiv>{title}</TitleDiv>
+              <DeleteDiv>{btnDelete}</DeleteDiv>
+            </>
+          ) : (
+            <Skeleton animation="wave" variant="text" height={20} />
+          )}
         </HeaderDiv>
 
         <MainBlockDiv>
           <Tooltip title="Перейти на страницу автора">
-            <AuthorDiv className="authorDiv" onClick={() => this.toUserPage(author.username)}>
-              {author.username}
-            </AuthorDiv>
+            {author.username === '' ? (
+              <Skeleton animation="wave" variant="text" />
+            ) : (
+              <AuthorDiv className="authorDiv" onClick={() => this.toUserPage(author.username)}>
+                <GreenTextStyle>Автор: </GreenTextStyle>
+                {author.username}
+              </AuthorDiv>
+            )}
           </Tooltip>
           <CreatedAtDiv>{createdDate}</CreatedAtDiv>
           <UpdateAtDiv>{updateDate}</UpdateAtDiv>
@@ -292,7 +336,6 @@ const UpdateAtDiv = styled.div`
 `;
 
 const TagListDiv = styled.div`
-  // overflow-wrap: break-word;
   overflow: auto;
   flex-grow: 1;
   margin-bottom: 5px;
@@ -325,4 +368,14 @@ const ReadMoreSpan = styled.span`
   display: block;
   flex-grow: 1;
   text-align: right;
+`;
+
+const GreenTextStyle = styled.span`
+  color: green;
+  font-size: 12px;
+`;
+
+const UpdateDateSpan = styled.span`
+  color: red;
+  font-size: 12px;
 `;

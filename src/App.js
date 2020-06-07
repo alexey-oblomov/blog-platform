@@ -13,7 +13,7 @@ import Edit from './components/edit/edit.jsx';
 import {Navbar} from './components/navbar/navbar.jsx';
 
 import {setAuthorized, setCurrentUserProfile} from './redux/actions/actionCreators';
-import {isAuth, makeHeadersForAuth, getCurrentUserFromServer} from './utils/api.js';
+import {isAuth, makeHeadersForAuth, getCurrentUserFromServer} from './services/api.js';
 
 function App(props) {
   const updateCurrentUserInState = async headers => {

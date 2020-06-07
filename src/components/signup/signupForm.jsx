@@ -14,7 +14,7 @@ import {
 } from '../../redux/actions/actionCreators';
 import CustomizedInputPassword from '../inputPassword/inputPassword';
 
-import {serverAuthorization, serverRegistration} from '../../utils/api';
+import {serverAuthorization, serverRegistration} from '../../services/api';
 
 const SignUpSchema = Yup.object().shape({
   name: Yup.string().required('Обязательное поле'),

@@ -1,15 +1,16 @@
 import React, {Component} from 'react';
 import styled from 'styled-components';
 import {connect} from 'react-redux';
+import Skeleton from '@material-ui/lab/Skeleton';
 
-import {articlesLoaded} from '../../redux/actions/actionCreators';
+import {articlesLoaded, setCurrentPage} from '../../redux/actions/actionCreators';
 import {
   makeHeadersForAuth,
   loadAllArticles,
   loadUserArticles,
   loadAllArticlesWithOffset,
   loadUserlArticlesWithOffset,
-} from '../../utils/api';
+} from '../../services/api';
 
 import Preview from '../article/preview.jsx';
 import Pagination from '@material-ui/lab/Pagination';
@@ -19,7 +20,7 @@ class ListArticles extends Component {
     const {showMode, showQuantity, setArticlesToState, isAuthorized} = this.props;
     const authHeaders = isAuthorized ? makeHeadersForAuth() : null;
 
-    if (showMode === '') {
+    if (showMode === 'allArticles' || showMode === '') {
       const response = await loadAllArticles(showQuantity, authHeaders);
       const {articles, articlesCount} = await response.data;
       setArticlesToState(articles, articlesCount);
@@ -48,7 +49,7 @@ class ListArticles extends Component {
     const offset = pageNumber > 1 ? pageNumber * 9 - 9 : null;
     const authHeaders = isAuthorized ? makeHeadersForAuth() : null;
 
-    if (showMode === '') {
+    if (showMode === 'allArticles') {
       const response = await loadAllArticlesWithOffset(showQuantity, offset, authHeaders);
       const {articles, articlesCount} = await response.data;
       setArticlesToState(articles, articlesCount);
@@ -65,17 +66,34 @@ class ListArticles extends Component {
   };
 
   componentDidMount() {
-    this.getListArticles();
+    const {setCurrentPage, showMode, currentUser} = this.props;
+    switch (showMode) {
+      case 'allArticles':
+        setCurrentPage('showAllArticles');
+        break;
+      case currentUser.username:
+        setCurrentPage('showMyArticles');
+        break;
+      default:
+        setCurrentPage('');
+    }
+
+    if (showMode === '') {
+    } else if (showMode) this.getListArticles();
   }
 
   render() {
-    const {listArticles, articlesCount, currentPage, history} = this.props;
+    const {listArticles, articlesCount, history} = this.props;
     const mapedListArticles = listArticles.map(item => {
       const {slug} = item;
       return (
         <div key={slug} onClick={event => this.openArticle(event, slug)}>
           <CardDiv>
-            <Preview slug={slug} history={history} />
+            {listArticles === [] ? (
+              <Skeleton animation="wave" variant="rect" width={250} height={300} />
+            ) : (
+              <Preview slug={slug} history={history} />
+            )}
           </CardDiv>
         </div>
       );
@@ -87,7 +105,6 @@ class ListArticles extends Component {
       variant: 'outlined',
       shape: 'rounded',
       onChange: this.handleChangePagination,
-      defaultPage: currentPage,
       articles: listArticles,
     };
 
@@ -103,7 +120,15 @@ class ListArticles extends Component {
 }
 
 const mapStateToProps = state => {
-  const {listArticles, articlesCount, isAuthorized, showMode, showQuantity, currentPage} = state;
+  const {
+    listArticles,
+    articlesCount,
+    isAuthorized,
+    showMode,
+    showQuantity,
+    currentPage,
+    currentUser,
+  } = state;
   return {
     listArticles,
     articlesCount,
@@ -111,6 +136,7 @@ const mapStateToProps = state => {
     showMode,
     showQuantity,
     currentPage,
+    currentUser,
   };
 };
 
@@ -118,6 +144,7 @@ const mapDispatchToProps = dispatch => {
   return {
     setArticlesToState: (listArticles, articlesCount) =>
       dispatch(articlesLoaded(listArticles, articlesCount)),
+    setCurrentPage: page => dispatch(setCurrentPage(page)),
   };
 };
 

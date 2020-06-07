@@ -14,7 +14,7 @@ import {
   setCurrentMenuItem,
 } from '../../redux/actions/actionCreators';
 import CustomizedInputPassword from '../inputPassword/inputPassword';
-import {serverAuthorization} from '../../utils/api';
+import {serverAuthorization} from '../../services/api';
 
 function LoginForm(props) {
   const initialValues = {

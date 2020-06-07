@@ -2,9 +2,9 @@ import React, {Component} from 'react';
 import styled from 'styled-components';
 import {connect} from 'react-redux';
 
-import {setCurrentMenuItem, showMode} from '../../redux/actions/actionCreators';
+import {setCurrentPage, showMode, articlesLoaded} from '../../redux/actions/actionCreators';
 
-import {makeHeadersForAuth, loadUserProfile} from '../../utils/api';
+import {makeHeadersForAuth, loadUserProfile} from '../../services/api';
 
 import {Button} from '@material-ui/core';
 
@@ -18,10 +18,11 @@ class UserProfile extends Component {
     },
   };
 
-  getUserArticles = async username => {
-    const {setShowMode, history, setCurrentMenuItem} = this.props;
+  getUserArticles = username => {
+    const {setShowMode, history, setCurrentPage, setArticlesToState} = this.props;
     setShowMode(username);
-    setCurrentMenuItem('');
+    setCurrentPage('');
+    setArticlesToState([], 0);
     history.push('/blog-platform');
   };
 
@@ -35,10 +36,10 @@ class UserProfile extends Component {
   };
 
   componentDidMount() {
-    const {setCurrentMenuItem, isAuthorized} = this.props;
+    const {setCurrentPage, isAuthorized} = this.props;
     const authHeaders = isAuthorized ? makeHeadersForAuth() : null;
     this.getUserProfileFromServer(authHeaders);
-    setCurrentMenuItem('');
+    setCurrentPage('');
   }
 
   render() {
@@ -72,7 +73,9 @@ const mapStateToProps = state => {
 const mapDispatchToProps = dispatch => {
   return {
     setShowMode: user => dispatch(showMode(user)),
-    setCurrentMenuItem: value => dispatch(setCurrentMenuItem(value)),
+    setCurrentPage: page => dispatch(setCurrentPage(page)),
+    setArticlesToState: (listArticles, articlesCount) =>
+      dispatch(articlesLoaded(listArticles, articlesCount)),
   };
 };
 

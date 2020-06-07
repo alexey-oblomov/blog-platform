@@ -1,17 +1,17 @@
 import React, {Component} from 'react';
 import {connect} from 'react-redux';
 import styled from 'styled-components';
-import {Formik, Form, Field} from 'formik';
+import {Formik, Form, Field, FieldArray} from 'formik';
 import * as Yup from 'yup';
 import {uniqueId} from 'lodash';
 import {Button} from '@material-ui/core';
 import TextField from '@material-ui/core/TextField';
 import TextareaAutosize from '@material-ui/core/TextareaAutosize';
-
 import Chip from '@material-ui/core/Chip';
 import Paper from '@material-ui/core/Paper';
 
-import {makeHeadersForAuth, createArticle} from '../../utils/api';
+import {setCurrentPage, articlesLoaded} from '../../redux/actions/actionCreators';
+import {makeHeadersForAuth, createArticle} from '../../services/api';
 
 const SignUpSchema = Yup.object().shape({
   title: Yup.string().required('Обязательное поле'),
@@ -20,32 +20,10 @@ const SignUpSchema = Yup.object().shape({
 });
 
 class AddForm extends Component {
-  state = {
-    tags: [],
-  };
-
-  addTag = tag => {
-    const item = {key: uniqueId(), label: tag};
-    const {tags} = this.state;
-    tags.push(item);
-    this.setState({
-      tags,
-    });
-  };
-
-  handleDelete = itemToDelete => {
-    const newTagsArr = this.state.tags.filter(item => item.key !== itemToDelete.key);
-    this.setState({
-      tags: newTagsArr,
-    });
-  };
-
   handleSubmit = async values => {
     const headers = makeHeadersForAuth();
-    const {title, description, body} = values;
-    const {tags} = this.state;
-    let tagList = [];
-    tags.map(item => tagList.push(item.label));
+    const {setArticlesToStore} = this.props;
+    const {title, description, body, tagList} = values;
     const newArticle = {
       article: {
         title,
@@ -55,15 +33,22 @@ class AddForm extends Component {
       },
     };
     await createArticle(newArticle, headers);
+    await setArticlesToStore([], 0);
     this.props.history.push('/blog-platform/');
   };
+
+  componentDidMount() {
+    const {setCurrentPage} = this.props;
+    setCurrentPage('addArticle');
+  }
 
   render() {
     const initialValues = {
       title: '',
       description: '',
       body: '',
-      tags: [],
+      tag: '',
+      tagList: [],
     };
 
     return (
@@ -72,7 +57,17 @@ class AddForm extends Component {
         onSubmit={this.handleSubmit}
         validationSchema={SignUpSchema}
       >
-        {({values, handleChange, handleBlur, errors, touched, dirty, isValid, setFieldValue}) => {
+        {({
+          values,
+          handleChange,
+          handleBlur,
+          errors,
+          touched,
+          dirty,
+          isValid,
+          setFieldValue,
+          setValues,
+        }) => {
           const inputTitleProps = {
             size: 'small',
             name: 'title',
@@ -80,7 +75,7 @@ class AddForm extends Component {
             component: TextField,
             label: 'Название статьи',
             variant: 'outlined',
-            error: touched.title && Boolean(errors.title),
+            error: touched.title && errors.title,
             value: values.title,
             onChange: handleChange('title'),
             onBlur: handleBlur('title'),
@@ -95,14 +90,14 @@ class AddForm extends Component {
             component: TextField,
             label: 'Краткое описание',
             variant: 'outlined',
-            error: touched.description && Boolean(errors.description),
+            error: touched.description && errors.description,
             value: values.description,
             onChange: handleChange('description'),
             onBlur: handleBlur('description'),
             required: true,
           };
 
-          const inputTagsProps = {
+          const inputTagProps = {
             size: 'small',
             name: 'tag',
             as: 'input',
@@ -111,8 +106,9 @@ class AddForm extends Component {
             variant: 'outlined',
             value: values.tag,
             onChange: handleChange('tag'),
-            error: touched.tag && Boolean(errors.tag),
+            error: touched.tag && errors.tag,
             onBlur: handleBlur('tag'),
+            style: {marginRight: '15px'},
           };
 
           const inputBodyProps = {
@@ -128,6 +124,44 @@ class AddForm extends Component {
             rowsMin: '25',
             required: true,
           };
+
+          const buttonAddTagProps = {
+            variant: 'contained',
+            size: 'small',
+            color: 'secondary',
+            onClick: () => {
+              if (values.tag.trim()) {
+                values.tagList.push(values.tag);
+                setFieldValue('tag', '');
+              }
+            },
+          };
+
+          const buttonAddArticleProps = {
+            variant: 'contained',
+            size: 'small',
+            color: 'primary',
+            disabled: !dirty || !isValid,
+            type: 'submit',
+          };
+
+          const paperStyle = {
+            display: 'flex',
+            justifyContent: 'flex-start',
+            flexWrap: 'wrap',
+            listStyle: 'none',
+            minHeight: '45px',
+          };
+
+          const paperProps = {
+            component: 'ul',
+            elevation: 0,
+            style: paperStyle,
+          };
+
+          const chipStyle = {maxWidth: '120px', overflow: 'hidden'};
+          const liStyle = {margin: '5px'};
+
           return (
             <ContainerDiv>
               <HeadingDiv>Добавить статью</HeadingDiv>
@@ -144,65 +178,45 @@ class AddForm extends Component {
                   </InputDiv>
 
                   <InputDiv>
-                    <Field {...inputTagsProps} style={{marginRight: '15px'}} />
+                    <Field {...inputTagProps} />
                     <ButtonBlockDiv>
-                      <Button
-                        variant="contained"
-                        size="small"
-                        color="secondary"
-                        onClick={() => {
-                          if (values.tag.trim()) {
-                            this.addTag(values.tag);
-                            setFieldValue('tag', '');
-                          }
-                        }}
-                      >
-                        Добавить тег
-                      </Button>
+                      <Button {...buttonAddTagProps}>Добавить тег</Button>
                     </ButtonBlockDiv>
                   </InputDiv>
-                  <TagsListDiv>
-                    <Paper
-                      component="ul"
-                      className=""
-                      elevation={0}
-                      style={{
-                        display: 'flex',
-                        justifyContent: 'flex-start',
-                        flexWrap: 'wrap',
-                        listStyle: 'none',
-                        minHeight: '45px',
-                      }}
-                    >
-                      {this.state.tags.map(item => {
-                        return (
-                          <li key={item.key} style={{margin: '5px'}}>
-                            <Chip
-                              label={item.label}
-                              onDelete={() => this.handleDelete(item)}
-                              style={{maxWidth: '120px', overflow: 'hidden'}}
-                            />
-                          </li>
-                        );
-                      })}
-                    </Paper>
-                  </TagsListDiv>
-                  {touched.tags ? errors.tags : ''}
+
+                  <FieldArray
+                    name="tagList"
+                    render={() => (
+                      <TagsListDiv>
+                        <Paper {...paperProps}>
+                          {values.tagList.map(tag => {
+                            return (
+                              <li key={uniqueId()} style={liStyle}>
+                                <Chip
+                                  label={tag}
+                                  onDelete={() => {
+                                    setValues({
+                                      ...values,
+                                      tagList: values.tagList.filter(item => item !== tag),
+                                    });
+                                  }}
+                                  style={chipStyle}
+                                />
+                              </li>
+                            );
+                          })}
+                        </Paper>
+                      </TagsListDiv>
+                    )}
+                  />
+                  {touched.tagList ? errors.tagList : ''}
 
                   <InputTextDiv>
                     <TextareaAutosize {...inputBodyProps} />
                     <ErrorDiv>{touched.body ? errors.body : ''}</ErrorDiv>
                   </InputTextDiv>
 
-                  <Button
-                    variant="contained"
-                    size="small"
-                    color="primary"
-                    disabled={!dirty || !isValid}
-                    type="submit"
-                  >
-                    Добавить статью
-                  </Button>
+                  <Button {...buttonAddArticleProps}>Добавить статью</Button>
                 </WrapperDiv>
               </Form>
             </ContainerDiv>
@@ -258,4 +272,12 @@ const TagsListDiv = styled.div`
   padding: '0';
 `;
 
-export default connect()(AddForm);
+const mapDispatchToProps = dispatch => {
+  return {
+    setArticlesToStore: (listArticles, articlesCount) =>
+      dispatch(articlesLoaded(listArticles, articlesCount)),
+    setCurrentPage: page => dispatch(setCurrentPage(page)),
+  };
+};
+
+export default connect(null, mapDispatchToProps)(AddForm);
