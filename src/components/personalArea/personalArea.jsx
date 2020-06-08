@@ -12,18 +12,17 @@ import {Button} from '@material-ui/core';
 
 class PersonalArea extends Component {
   logout = () => {
-    const {authorization, history, setCurrentUser, setShowMode, setArticlesToStore} = this.props;
+    const {authorization, history, setCurrentUser, setArticlesToStore} = this.props;
     authorization(false);
     localStorage.clear();
     setCurrentUser({});
-    setShowMode('');
     setArticlesToStore([], 0);
     history.push('/blog-platform/login');
   };
 
   getAllArticles = async () => {
     const {setShowMode, history, setArticlesToStore} = this.props;
-    setShowMode('allArticles');
+    setShowMode('');
     setArticlesToStore([], 0);
     history.push('/blog-platform/login');
   };

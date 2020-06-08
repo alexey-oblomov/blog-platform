@@ -32,13 +32,17 @@ class Preview extends Component {
   };
 
   getArticleFromServer = async headers => {
-    const {slug} = this.props;
-    const response = await loadArticle(slug, headers);
-    if (response.status === 200) {
-      const {article} = await response.data;
-      this.setState({
-        article,
-      });
+    try {
+      const {slug} = this.props;
+      const response = await loadArticle(slug, headers);
+      if (response.status === 200) {
+        const {article} = await response.data;
+        this.setState({
+          article,
+        });
+      }
+    } catch (error) {
+      console.log('error 404 ', error);
     }
   };
 
@@ -137,25 +141,25 @@ class Preview extends Component {
     const createDate = diffDateCreate(createdAt);
     const updDate = diffDateCreate(updatedAt);
 
-    const createdDate =
-      createdAt === '' ? (
-        <Skeleton animation="wave" variant="text" />
-      ) : (
-        <div>
-          <GreenTextStyle>Создано: </GreenTextStyle>
-          {createDate}
-        </div>
-      );
+    const createdDate = createdAt ? (
+      <div>
+        <GreenTextStyle>Создано: </GreenTextStyle>
+        {createDate}
+      </div>
+    ) : (
+      <Skeleton animation="wave" variant="text" />
+    );
 
-    const updateDate =
-      updatedAt === '' ? (
-        <Skeleton animation="wave" variant="text" />
-      ) : isModifed ? (
+    const updateDate = updatedAt ? (
+      isModifed ? (
         <div>
           <UpdateDateSpan>Изменено:</UpdateDateSpan>
           {updDate}
         </div>
-      ) : null;
+      ) : null
+    ) : (
+      <Skeleton animation="wave" variant="text" />
+    );
 
     const btnLike = isAuthorized ? (
       favorited ? (
@@ -210,13 +214,13 @@ class Preview extends Component {
 
         <MainBlockDiv>
           <Tooltip title="Перейти на страницу автора">
-            {author.username === '' ? (
-              <Skeleton animation="wave" variant="text" />
-            ) : (
+            {author.username ? (
               <AuthorDiv className="authorDiv" onClick={() => this.toUserPage(author.username)}>
                 <GreenTextStyle>Автор: </GreenTextStyle>
                 {author.username}
               </AuthorDiv>
+            ) : (
+              <Skeleton animation="wave" variant="text" />
             )}
           </Tooltip>
           <CreatedAtDiv>{createdDate}</CreatedAtDiv>

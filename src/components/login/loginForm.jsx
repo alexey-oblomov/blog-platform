@@ -11,7 +11,8 @@ import TextField from '@material-ui/core/TextField';
 import {
   setAuthorized,
   setCurrentUserProfile,
-  setCurrentMenuItem,
+  setCurrentPage,
+  articlesLoaded,
 } from '../../redux/actions/actionCreators';
 import CustomizedInputPassword from '../inputPassword/inputPassword';
 import {serverAuthorization} from '../../services/api';
@@ -23,7 +24,7 @@ function LoginForm(props) {
   };
 
   const handleSubmit = async (values, {setFieldError}) => {
-    const {setAuth, history, setCurrentUser, setCurrentMenuItem} = props;
+    const {setAuth, history, setCurrentUser, setArticlesToStore} = props;
     const {email, password} = values;
     const loginData = {
       user: {
@@ -36,11 +37,10 @@ function LoginForm(props) {
       const loginResponse = await serverAuthorization(loginData);
       if (loginResponse.status === 200) {
         const {user} = await loginResponse.data;
-
         setLoginDataToLocalStorage(user);
         setCurrentUser(user);
         setAuth(true);
-        setCurrentMenuItem('showAllArticles');
+        await setArticlesToStore([], 0);
         history.push('/blog-platform');
       }
     } catch (error) {
@@ -62,6 +62,7 @@ function LoginForm(props) {
           name: 'email',
           as: 'input',
           component: TextField,
+          value: values.email,
           label: 'Электронная почта',
           variant: 'outlined',
           onChange: handleChange('email'),
@@ -123,7 +124,9 @@ const mapDispatchToProps = dispatch => {
   return {
     setAuth: auth => dispatch(setAuthorized(auth)),
     setCurrentUser: user => dispatch(setCurrentUserProfile(user)),
-    setCurrentMenuItem: currentMenuItem => dispatch(setCurrentMenuItem(currentMenuItem)),
+    setCurrentPage: page => dispatch(setCurrentPage(page)),
+    setArticlesToStore: (articles, articlesCount) =>
+      dispatch(articlesLoaded(articles, articlesCount)),
   };
 };
 

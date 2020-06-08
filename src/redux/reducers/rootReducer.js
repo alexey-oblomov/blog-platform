@@ -4,7 +4,6 @@ import {
   SET_AUTHORIZED,
   SHOW_MODE,
   CURRENT_USER_PROFILE_LOAD,
-  SET_CURRENT_MENU_ITEM,
   SET_CURRENT_PAGE,
 } from '../actions/actionTypes';
 
@@ -12,9 +11,8 @@ const initialState = {
   listArticles: [],
   articlesCount: 0,
   isAuthorized: false,
-  showMode: 'allArticles',
+  showMode: '',
   currentUser: {},
-  currentMenuItem: null,
   showQuantity: 9,
   currentPage: '',
 };
@@ -27,7 +25,6 @@ export default function rootReducer(state = initialState, action) {
     currentArticle,
     isAuthorized,
     currentUser,
-    currentMenuItem,
     showMode,
     currentPage,
   } = action;
@@ -42,8 +39,6 @@ export default function rootReducer(state = initialState, action) {
       return {...state, showMode};
     case CURRENT_USER_PROFILE_LOAD:
       return {...state, currentUser};
-    case SET_CURRENT_MENU_ITEM:
-      return {...state, currentMenuItem};
     case SET_CURRENT_PAGE:
       return {...state, currentPage};
     default:

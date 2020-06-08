@@ -4,7 +4,6 @@ import {
   SET_AUTHORIZED,
   SHOW_MODE,
   CURRENT_USER_PROFILE_LOAD,
-  SET_CURRENT_MENU_ITEM,
   SET_CURRENT_PAGE,
 } from './actionTypes';
 
@@ -41,13 +40,6 @@ export const setCurrentUserProfile = currentUser => {
   return {
     type: CURRENT_USER_PROFILE_LOAD,
     currentUser,
-  };
-};
-
-export const setCurrentMenuItem = currentMenuItem => {
-  return {
-    type: SET_CURRENT_MENU_ITEM,
-    currentMenuItem,
   };
 };
 

@@ -10,7 +10,7 @@ import TextField from '@material-ui/core/TextField';
 import {
   setAuthorized,
   setCurrentUserProfile,
-  setCurrentMenuItem,
+  setCurrentPage,
 } from '../../redux/actions/actionCreators';
 import CustomizedInputPassword from '../inputPassword/inputPassword';
 
@@ -33,7 +33,7 @@ function SignupForm(props) {
   };
 
   const handleSubmit = async (values, {setFieldError}) => {
-    const {setAuth, history, setCurrentUser, setCurrentMenuItem} = props;
+    const {setAuth, history, setCurrentUser, setArticlesToStore} = props;
     const {name, email, password} = values;
     const regData = {
       user: {
@@ -57,13 +57,14 @@ function SignupForm(props) {
         setLoginDataToLocalStorage(user);
         setCurrentUser(user);
         setAuth(true);
-        setCurrentMenuItem('showAllArticles');
+        setArticlesToStore([], 0);
         history.push('/blog-platform');
       }
     } catch (error) {
-      setFieldError('email', error.response.data.errors.email);
-      setFieldError('name', error.response.data.errors.username);
-      setFieldError('password', error.response.data.errors.password);
+      const {email, username, password} = error.response.data.errors;
+      setFieldError('email', email);
+      setFieldError('name', username);
+      setFieldError('password', password);
     }
   };
 
@@ -173,7 +174,7 @@ const mapDispatchToProps = dispatch => {
   return {
     setAuth: auth => dispatch(setAuthorized(auth)),
     setCurrentUser: user => dispatch(setCurrentUserProfile(user)),
-    setCurrentMenuItem: currentMenuItem => dispatch(setCurrentMenuItem(currentMenuItem)),
+    setCurrentPage: page => dispatch(setCurrentPage(page)),
   };
 };
 

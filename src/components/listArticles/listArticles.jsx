@@ -1,7 +1,6 @@
 import React, {Component} from 'react';
 import styled from 'styled-components';
 import {connect} from 'react-redux';
-import Skeleton from '@material-ui/lab/Skeleton';
 
 import {articlesLoaded, setCurrentPage} from '../../redux/actions/actionCreators';
 import {
@@ -20,7 +19,7 @@ class ListArticles extends Component {
     const {showMode, showQuantity, setArticlesToState, isAuthorized} = this.props;
     const authHeaders = isAuthorized ? makeHeadersForAuth() : null;
 
-    if (showMode === 'allArticles' || showMode === '') {
+    if (showMode === '') {
       const response = await loadAllArticles(showQuantity, authHeaders);
       const {articles, articlesCount} = await response.data;
       setArticlesToState(articles, articlesCount);
@@ -49,7 +48,7 @@ class ListArticles extends Component {
     const offset = pageNumber > 1 ? pageNumber * 9 - 9 : null;
     const authHeaders = isAuthorized ? makeHeadersForAuth() : null;
 
-    if (showMode === 'allArticles') {
+    if (showMode === '') {
       const response = await loadAllArticlesWithOffset(showQuantity, offset, authHeaders);
       const {articles, articlesCount} = await response.data;
       setArticlesToState(articles, articlesCount);
@@ -68,7 +67,7 @@ class ListArticles extends Component {
   componentDidMount() {
     const {setCurrentPage, showMode, currentUser} = this.props;
     switch (showMode) {
-      case 'allArticles':
+      case '':
         setCurrentPage('showAllArticles');
         break;
       case currentUser.username:
@@ -77,9 +76,7 @@ class ListArticles extends Component {
       default:
         setCurrentPage('');
     }
-
-    if (showMode === '') {
-    } else if (showMode) this.getListArticles();
+    this.getListArticles();
   }
 
   render() {
@@ -89,11 +86,7 @@ class ListArticles extends Component {
       return (
         <div key={slug} onClick={event => this.openArticle(event, slug)}>
           <CardDiv>
-            {listArticles === [] ? (
-              <Skeleton animation="wave" variant="rect" width={250} height={300} />
-            ) : (
-              <Preview slug={slug} history={history} />
-            )}
+            <Preview slug={slug} history={history} />
           </CardDiv>
         </div>
       );
