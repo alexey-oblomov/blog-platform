@@ -1,6 +1,5 @@
 import axios from 'axios';
-
-const baseApiUrl = 'https://conduit.productionready.io/api/';
+import {baseApiUrl} from './paths';
 
 export const getAuthorizationHeaders = () => {
   const token = localStorage.getItem('token');
@@ -59,9 +58,7 @@ export function loadArticle(slug) {
 
 export function likeIt(slug) {
   const url = baseApiUrl + `articles/${slug}/favorite`;
-  return axios.post(url, null, {
-    header,
-  });
+  return axios.post(url, null, header);
 }
 
 export function unLikeIt(slug) {

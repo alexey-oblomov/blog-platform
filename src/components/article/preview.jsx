@@ -40,41 +40,41 @@ class Preview extends Component {
     }
   };
 
-  toggleLike = (slug, favorited, authHeaders) => {
+  toggleLike = (slug, favorited) => {
     if (favorited) {
-      this.setUnlike(slug, authHeaders);
+      this.setUnlike(slug);
     } else {
-      this.setLike(slug, authHeaders);
+      this.setLike(slug);
     }
   };
 
-  setLike = async (slug, headers) => {
-    const response = await likeIt(slug, headers);
+  setLike = async slug => {
+    const response = await likeIt(slug);
     const {article} = response.data;
     this.setState({
       article,
     });
   };
 
-  setUnlike = async (slug, headers) => {
-    const response = await unLikeIt(slug, headers);
+  setUnlike = async slug => {
+    const response = await unLikeIt(slug);
     const {article} = response.data;
     this.setState({
       article,
     });
   };
 
-  toggleLike = (slug, favorited, authHeaders) => {
+  toggleLike = (slug, favorited) => {
     if (favorited) {
-      this.setUnlike(slug, authHeaders);
+      this.setUnlike(slug);
     } else {
-      this.setLike(slug, authHeaders);
+      this.setLike(slug);
     }
   };
 
-  deleteArticle = async (slug, authHeaders) => {
+  deleteArticle = async slug => {
     const {history, setArticlesToState} = this.props;
-    const response = await deleteArticleFromServer(slug, authHeaders);
+    const response = await deleteArticleFromServer(slug);
     if (response.status === 200) {
       await setArticlesToState([], 0);
       history.push('/blog-platform/login');
