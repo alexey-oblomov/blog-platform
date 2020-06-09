@@ -2,7 +2,7 @@ export function isAuth() {
   return localStorage.getItem('token') ? true : false;
 }
 
-export const setLoginDataToLocalStorage = data => {
+export function setLoginDataToLocalStorage(data) {
   const {token} = data;
-  localStorage.setItem('token', token);
-};
+  return localStorage.setItem('token', token);
+}
