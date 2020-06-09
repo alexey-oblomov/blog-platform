@@ -1,12 +1,6 @@
 import React, {Component} from 'react';
 import {connect} from 'react-redux';
-import {
-  makeHeadersForAuth,
-  loadArticle,
-  likeIt,
-  unLikeIt,
-  deleteArticleFromServer,
-} from '../../services/api';
+import {loadArticle, likeIt, unLikeIt, deleteArticleFromServer} from '../../services/serverApi';
 
 import {uniqueId} from 'lodash';
 import {articlesLoaded} from '../../redux/actions/actionCreators';
@@ -94,16 +88,13 @@ class Preview extends Component {
   };
 
   componentDidMount() {
-    const {isAuthorized} = this.props;
-    const authHeaders = isAuthorized ? makeHeadersForAuth() : null;
-    this.getArticleFromServer(authHeaders);
+    this.getArticleFromServer();
   }
 
   render() {
     const {slug, currentUser, isAuthorized} = this.props;
     const {article} = this.state;
     const {title, author, tagList, favoritesCount, createdAt, updatedAt, favorited} = article;
-    const authHeaders = isAuthorized ? makeHeadersForAuth() : null;
     const linkPath = `/blog-platform/articles/${slug}`;
     const isModifed = createdAt === updatedAt ? false : true;
 
@@ -168,7 +159,7 @@ class Preview extends Component {
             color="primary"
             className="btnLike"
             alt="like"
-            onClick={() => this.toggleLike(slug, favorited, authHeaders)}
+            onClick={() => this.toggleLike(slug, favorited)}
           />
         </Tooltip>
       ) : (
@@ -176,7 +167,7 @@ class Preview extends Component {
           <FavoriteBorderIcon
             color="primary"
             className="btnLike"
-            onClick={() => this.toggleLike(slug, favorited, authHeaders)}
+            onClick={() => this.toggleLike(slug, favorited)}
           />
         </Tooltip>
       )
@@ -193,7 +184,7 @@ class Preview extends Component {
             <HighlightOffIcon
               className="btnDelete"
               style={{fontSize: 30}}
-              onClick={() => this.deleteArticle(slug, authHeaders)}
+              onClick={() => this.deleteArticle(slug)}
             />
           </Tooltip>
         </DeleteDiv>

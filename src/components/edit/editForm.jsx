@@ -10,12 +10,7 @@ import TextField from '@material-ui/core/TextField';
 import TextareaAutosize from '@material-ui/core/TextareaAutosize';
 import Chip from '@material-ui/core/Chip';
 import Paper from '@material-ui/core/Paper';
-import {
-  makeHeadersForAuth,
-  deleteArticleFromServer,
-  updateArticle,
-  loadArticle,
-} from '../../services/api';
+import {deleteArticleFromServer, updateArticle, loadArticle} from '../../services/serverApi';
 import {articlesLoaded, setCurrentPage} from '../../redux/actions/actionCreators';
 
 const SignUpSchema = Yup.object().shape({
@@ -46,20 +41,18 @@ class EditForm extends Component {
 
   handleSubmit = async values => {
     const {slug, history, setArticlesToStore} = this.props;
-    const headers = makeHeadersForAuth();
     const {title, description, body, tagList} = values;
     const updArticle = {
       article: {title, description, body, tagList},
     };
-    await updateArticle(slug, updArticle, headers);
+    await updateArticle(slug, updArticle);
     await setArticlesToStore([], 0);
     history.push('/blog-platform/');
   };
 
   deleteArticle = async () => {
     const {slug, history, setArticlesToStore} = this.props;
-    const authHeaders = makeHeadersForAuth();
-    const response = await deleteArticleFromServer(slug, authHeaders);
+    const response = await deleteArticleFromServer(slug);
     if (response.status === 200) {
       await setArticlesToStore([], 0);
       history.push('/blog-platform');
@@ -67,9 +60,8 @@ class EditForm extends Component {
   };
 
   componentDidMount() {
-    const {setCurrentPage, isAuthorized} = this.props;
-    const authHeaders = isAuthorized ? makeHeadersForAuth() : null;
-    this.getArticleFromServer(authHeaders);
+    const {setCurrentPage} = this.props;
+    this.getArticleFromServer();
     setCurrentPage('');
   }
 

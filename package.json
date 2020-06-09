@@ -10,18 +10,12 @@
     "@testing-library/jest-dom": "^4.2.4",
     "@testing-library/react": "^9.5.0",
     "@testing-library/user-event": "^7.2.1",
-    "antd": "^4.1.4",
     "axios": "^0.19.2",
-    "body-parser": "^1.19.0",
-    "cors": "^2.8.5",
     "date-fns": "^2.14.0",
-    "ejs": "^3.0.2",
-    "express": "^4.17.1",
     "formik": "^2.1.4",
     "gh-pages": "^2.2.0",
     "lodash": "^4.17.15",
     "lodash.uniqueid": "^4.0.1",
-    "node-sass": "^4.13.1",
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
     "react-redux": "^7.2.0",
@@ -44,8 +38,7 @@
     "eslint:fix:layout": "eslint  src/*.{js,jsx} --fix --fix-type layout",
     "lint": "npm run eslint & npm run stylelint",
     "lint:fix": "npm run eslint:fix & npm run stylelint:fix",
-    "prettier": "prettier src/**/*.*",
-    "server": "node server/bin/www"
+    "prettier": "prettier src/**/*.*"
   },
   "eslintConfig": {
     "extends": "react-app"

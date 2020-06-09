@@ -4,7 +4,7 @@ import {connect} from 'react-redux';
 
 import {setCurrentPage, showMode, articlesLoaded} from '../../redux/actions/actionCreators';
 
-import {makeHeadersForAuth, loadUserProfile} from '../../services/api';
+import {loadUserProfile} from '../../services/serverApi';
 
 import {Button} from '@material-ui/core';
 
@@ -36,9 +36,8 @@ class UserProfile extends Component {
   };
 
   componentDidMount() {
-    const {setCurrentPage, isAuthorized} = this.props;
-    const authHeaders = isAuthorized ? makeHeadersForAuth() : null;
-    this.getUserProfileFromServer(authHeaders);
+    const {setCurrentPage} = this.props;
+    this.getUserProfileFromServer();
     setCurrentPage('');
   }
 

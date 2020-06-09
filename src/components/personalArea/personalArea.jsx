@@ -6,7 +6,7 @@ import {
   showMode,
   setCurrentUserProfile,
 } from '../../redux/actions/actionCreators';
-import {makeHeadersForAuth, getCurrentUser} from '../../services/api';
+import {getCurrentUser} from '../../services/serverApi';
 import {connect} from 'react-redux';
 import {Button} from '@material-ui/core';
 
@@ -41,8 +41,7 @@ class PersonalArea extends Component {
 
   getCurrentUserProfile = async () => {
     const {setCurrentUser} = this.props;
-    const headers = makeHeadersForAuth();
-    const response = await getCurrentUser(headers);
+    const response = await getCurrentUser();
     const {user} = await response.data;
     setCurrentUser(user);
   };

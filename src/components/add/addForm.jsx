@@ -11,7 +11,7 @@ import Chip from '@material-ui/core/Chip';
 import Paper from '@material-ui/core/Paper';
 
 import {setCurrentPage, articlesLoaded} from '../../redux/actions/actionCreators';
-import {makeHeadersForAuth, createArticle} from '../../services/api';
+import {createArticle} from '../../services/serverApi';
 
 const SignUpSchema = Yup.object().shape({
   title: Yup.string().required('Обязательное поле'),
@@ -21,7 +21,6 @@ const SignUpSchema = Yup.object().shape({
 
 class AddForm extends Component {
   handleSubmit = async values => {
-    const headers = makeHeadersForAuth();
     const {setArticlesToStore} = this.props;
     const {title, description, body, tagList} = values;
     const newArticle = {
@@ -32,7 +31,7 @@ class AddForm extends Component {
         tagList,
       },
     };
-    await createArticle(newArticle, headers);
+    await createArticle(newArticle);
     await setArticlesToStore([], 0);
     this.props.history.push('/blog-platform/');
   };

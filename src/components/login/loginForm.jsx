@@ -15,7 +15,9 @@ import {
   articlesLoaded,
 } from '../../redux/actions/actionCreators';
 import CustomizedInputPassword from '../inputPassword/inputPassword';
-import {serverAuthorization} from '../../services/api';
+
+import {serverAuthorization} from '../../services/serverApi.js';
+import {setLoginDataToLocalStorage} from '../../services/localStorageApi.js';
 
 function LoginForm(props) {
   const initialValues = {
@@ -37,7 +39,7 @@ function LoginForm(props) {
       const loginResponse = await serverAuthorization(loginData);
       if (loginResponse.status === 200) {
         const {user} = await loginResponse.data;
-        setLoginDataToLocalStorage(user);
+        await setLoginDataToLocalStorage(user);
         setCurrentUser(user);
         setAuth(true);
         await setArticlesToStore([], 0);
@@ -47,11 +49,6 @@ function LoginForm(props) {
       setFieldError('email', 'Некорректные данные');
       setFieldError('password', ' ');
     }
-  };
-
-  const setLoginDataToLocalStorage = data => {
-    const {token} = data;
-    localStorage.setItem('token', token);
   };
 
   return (

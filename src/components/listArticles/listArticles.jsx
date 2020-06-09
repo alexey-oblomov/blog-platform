@@ -4,27 +4,24 @@ import {connect} from 'react-redux';
 
 import {articlesLoaded, setCurrentPage} from '../../redux/actions/actionCreators';
 import {
-  makeHeadersForAuth,
   loadAllArticles,
   loadUserArticles,
   loadAllArticlesWithOffset,
   loadUserlArticlesWithOffset,
-} from '../../services/api';
+} from '../../services/serverApi';
 
 import Preview from '../article/preview.jsx';
 import Pagination from '@material-ui/lab/Pagination';
 
 class ListArticles extends Component {
   getListArticles = async () => {
-    const {showMode, showQuantity, setArticlesToState, isAuthorized} = this.props;
-    const authHeaders = isAuthorized ? makeHeadersForAuth() : null;
-
+    const {showMode, showQuantity, setArticlesToState} = this.props;
     if (showMode === '') {
-      const response = await loadAllArticles(showQuantity, authHeaders);
+      const response = await loadAllArticles(showQuantity);
       const {articles, articlesCount} = await response.data;
       setArticlesToState(articles, articlesCount);
     } else {
-      const response = await loadUserArticles(showQuantity, showMode, authHeaders);
+      const response = await loadUserArticles(showQuantity, showMode);
       const {articles, articlesCount} = await response.data;
       setArticlesToState(articles, articlesCount);
     }
@@ -42,23 +39,17 @@ class ListArticles extends Component {
   };
 
   handleChangePagination = async event => {
-    const {showMode, setArticlesToState, isAuthorized, showQuantity} = this.props;
+    const {showMode, setArticlesToState, showQuantity} = this.props;
     const pageNumber = event.currentTarget.textContent;
     const username = showMode;
     const offset = pageNumber > 1 ? pageNumber * 9 - 9 : null;
-    const authHeaders = isAuthorized ? makeHeadersForAuth() : null;
 
     if (showMode === '') {
-      const response = await loadAllArticlesWithOffset(showQuantity, offset, authHeaders);
+      const response = await loadAllArticlesWithOffset(showQuantity, offset);
       const {articles, articlesCount} = await response.data;
       setArticlesToState(articles, articlesCount);
     } else {
-      const response = await loadUserlArticlesWithOffset(
-        showQuantity,
-        username,
-        offset,
-        authHeaders
-      );
+      const response = await loadUserlArticlesWithOffset(showQuantity, username, offset);
       const {articles, articlesCount} = await response.data;
       setArticlesToState(articles, articlesCount);
     }

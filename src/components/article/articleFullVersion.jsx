@@ -4,13 +4,7 @@ import {connect} from 'react-redux';
 import {uniqueId} from 'lodash';
 
 import {articlesLoaded, setCurrentPage} from '../../redux/actions/actionCreators';
-import {
-  makeHeadersForAuth,
-  loadArticle,
-  likeIt,
-  unLikeIt,
-  deleteArticleFromServer,
-} from '../../services/api';
+import {loadArticle, likeIt, unLikeIt, deleteArticleFromServer} from '../../services/serverApi';
 
 import FavoriteBorderIcon from '@material-ui/icons/FavoriteBorder';
 import FavoriteIcon from '@material-ui/icons/Favorite';
@@ -72,8 +66,7 @@ class ArticleFullVersion extends Component {
 
   deleteArticle = async () => {
     const {slug, history, setArticlesToState} = this.props;
-    const authHeaders = makeHeadersForAuth();
-    const response = await deleteArticleFromServer(slug, authHeaders);
+    const response = await deleteArticleFromServer(slug);
     if (response.status === 200) {
       await setArticlesToState([], 0);
       history.push('/blog-platform');
@@ -81,16 +74,14 @@ class ArticleFullVersion extends Component {
   };
 
   componentDidMount() {
-    const {setCurrentPage, isAuthorized} = this.props;
-    const authHeaders = isAuthorized ? makeHeadersForAuth() : null;
-    this.getArticleFromServer(authHeaders);
+    const {setCurrentPage} = this.props;
+    this.getArticleFromServer();
     setCurrentPage('');
   }
 
   render() {
     const {isAuthorized, currentUser} = this.props;
     let {title, author, body, tagList, favorited, favoritesCount} = this.state.article;
-    const authHeaders = isAuthorized ? makeHeadersForAuth() : null;
     const tags = (
       <TagsListDiv>
         <Paper
@@ -146,14 +137,14 @@ class ArticleFullVersion extends Component {
           alt="like"
           color="primary"
           style={{fontSize: 30}}
-          onClick={event => this.toggleLike(favorited, authHeaders)}
+          onClick={event => this.toggleLike(favorited)}
         />
       ) : (
         <FavoriteBorderIcon
           className="btnLike"
           color="primary"
           style={{fontSize: 30}}
-          onClick={event => this.toggleLike(favorited, authHeaders)}
+          onClick={event => this.toggleLike(favorited)}
         />
       )
     ) : (
