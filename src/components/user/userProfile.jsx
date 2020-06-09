@@ -2,11 +2,10 @@ import React, {Component} from 'react';
 import styled from 'styled-components';
 import {connect} from 'react-redux';
 
-import {setCurrentPage, showMode, articlesLoaded} from '../../redux/actions/actionCreators';
-
-import {loadUserProfile} from '../../services/serverApi';
-
 import {Button} from '@material-ui/core';
+
+import {setCurrentPage, showMode, articlesLoaded} from '../../redux/actions/actionCreators';
+import {loadUserProfile} from '../../services/serverApi';
 
 class UserProfile extends Component {
   state = {

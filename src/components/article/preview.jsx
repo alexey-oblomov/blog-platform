@@ -1,12 +1,13 @@
 import React, {Component} from 'react';
 import {connect} from 'react-redux';
-import {loadArticle, likeIt, unLikeIt, deleteArticleFromServer} from '../../services/serverApi';
-
-import {uniqueId} from 'lodash';
-import {articlesLoaded} from '../../redux/actions/actionCreators';
 import {differenceInMinutes, differenceInHours, differenceInDays} from 'date-fns';
 import {Link} from 'react-router-dom';
 import styled from 'styled-components';
+
+import {uniqueId} from 'lodash';
+import {articlesLoaded} from '../../redux/actions/actionCreators';
+import {loadArticle, likeIt, unLikeIt, deleteArticleFromServer} from '../../services/serverApi';
+
 import HighlightOffIcon from '@material-ui/icons/HighlightOff';
 import FavoriteBorderIcon from '@material-ui/icons/FavoriteBorder';
 import FavoriteIcon from '@material-ui/icons/Favorite';

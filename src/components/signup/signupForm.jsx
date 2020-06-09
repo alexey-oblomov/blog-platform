@@ -15,6 +15,7 @@ import {
 import CustomizedInputPassword from '../inputPassword/inputPassword';
 
 import {serverAuthorization, serverRegistration} from '../../services/serverApi';
+import {setLoginDataToLocalStorage} from '../../services/localStorageApi.js';
 
 const SignUpSchema = Yup.object().shape({
   name: Yup.string().required('Обязательное поле'),
@@ -66,11 +67,6 @@ function SignupForm(props) {
       setFieldError('name', username);
       setFieldError('password', password);
     }
-  };
-
-  const setLoginDataToLocalStorage = data => {
-    const {token} = data;
-    localStorage.setItem('token', token);
   };
 
   return (

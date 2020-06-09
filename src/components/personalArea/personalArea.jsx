@@ -1,5 +1,9 @@
 import React, {Component} from 'react';
 import styled from 'styled-components';
+
+import {connect} from 'react-redux';
+import {Button} from '@material-ui/core';
+
 import {
   articlesLoaded,
   setAuthorized,
@@ -7,8 +11,6 @@ import {
   setCurrentUserProfile,
 } from '../../redux/actions/actionCreators';
 import {getCurrentUser} from '../../services/serverApi';
-import {connect} from 'react-redux';
-import {Button} from '@material-ui/core';
 
 class PersonalArea extends Component {
   logout = () => {

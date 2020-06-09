@@ -2,6 +2,9 @@ import React, {Component} from 'react';
 import styled from 'styled-components';
 import {connect} from 'react-redux';
 
+import Preview from '../article/preview.jsx';
+import Pagination from '@material-ui/lab/Pagination';
+
 import {articlesLoaded, setCurrentPage} from '../../redux/actions/actionCreators';
 import {
   loadAllArticles,
@@ -9,9 +12,6 @@ import {
   loadAllArticlesWithOffset,
   loadUserlArticlesWithOffset,
 } from '../../services/serverApi';
-
-import Preview from '../article/preview.jsx';
-import Pagination from '@material-ui/lab/Pagination';
 
 class ListArticles extends Component {
   getListArticles = async () => {
