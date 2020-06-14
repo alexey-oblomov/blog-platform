@@ -1,18 +1,20 @@
 import React, {Component} from 'react';
 import {connect} from 'react-redux';
 import styled from 'styled-components';
+import {uniqueId} from 'lodash';
 
 import {Formik, Form, Field, FieldArray} from 'formik';
 import * as Yup from 'yup';
-import {uniqueId} from 'lodash';
+
 import {Button} from '@material-ui/core';
 import TextField from '@material-ui/core/TextField';
 import TextareaAutosize from '@material-ui/core/TextareaAutosize';
 import Chip from '@material-ui/core/Chip';
 import Paper from '@material-ui/core/Paper';
 
-import {deleteArticleFromServer, updateArticle, loadArticle} from '../../services/serverApi';
-import {articlesLoaded, setCurrentPage} from '../../redux/actions/actionCreators';
+import {deleteArticleRequest, updateArticleRequest} from '../../../services/serverApi';
+import {articlesLoad, setCurrentMenuItem} from '../../../redux/actions/actionCreators';
+import {baseRoutePath} from '../../../services/paths.js';
 
 const SignUpSchema = Yup.object().shape({
   title: Yup.string().required('Обязательное поле'),
@@ -20,7 +22,7 @@ const SignUpSchema = Yup.object().shape({
   body: Yup.string().required('Обязательное поле'),
 });
 
-class EditForm extends Component {
+class EditArticleForm extends Component {
   state = {
     article: {
       title: '',
@@ -31,43 +33,45 @@ class EditForm extends Component {
     },
   };
 
-  getArticleFromServer = async headers => {
-    const {slug} = this.props;
-    const response = await loadArticle(slug, headers);
-    const {article} = await response.data;
-    this.setState({
-      article,
-    });
+  getArticleFromStoreToState = async headers => {
+    const {slug, listArticles} = this.props;
+    if (listArticles) {
+      const article = listArticles.find(item => item.slug === slug);
+      this.setState({
+        article,
+      });
+    } else return;
   };
 
   handleSubmit = async values => {
-    const {slug, history, setArticlesToStore} = this.props;
+    const {slug, history} = this.props;
     const {title, description, body, tagList} = values;
     const updArticle = {
       article: {title, description, body, tagList},
     };
-    await updateArticle(slug, updArticle);
-    await setArticlesToStore([], 0);
-    history.push('/blog-platform/');
+    await updateArticleRequest(slug, updArticle);
+    history.push(baseRoutePath);
   };
 
-  deleteArticle = async () => {
-    const {slug, history, setArticlesToStore} = this.props;
-    const response = await deleteArticleFromServer(slug);
+  handleDeleteArticle = async () => {
+    const {slug, history} = this.props;
+    const response = await deleteArticleRequest(slug);
     if (response.status === 200) {
-      await setArticlesToStore([], 0);
-      history.push('/blog-platform');
+      history.push(baseRoutePath);
     }
   };
 
   componentDidMount() {
-    const {setCurrentPage} = this.props;
-    this.getArticleFromServer();
-    setCurrentPage('');
+    const {setCurrentMenuItem} = this.props;
+    this.getArticleFromStoreToState();
+    setCurrentMenuItem('');
   }
 
   render() {
     const {article} = this.state;
+    if (!article) {
+      return null;
+    }
     const {title, description, body, tagList} = article;
     const initialValues = {
       title,
@@ -166,7 +170,7 @@ class EditForm extends Component {
             },
           };
 
-          const buttonAddArticleProps = {
+          const buttonEditArticleProps = {
             variant: 'contained',
             size: 'small',
             color: 'primary',
@@ -177,7 +181,7 @@ class EditForm extends Component {
           const buttonDeleteArticleProps = {
             variant: 'contained',
             size: 'small',
-            onClick: this.deleteArticle,
+            onClick: this.handleDeleteArticle,
           };
 
           const paperStyle = {
@@ -253,7 +257,7 @@ class EditForm extends Component {
 
                   <ButtonBlockDiv>
                     <ButtonDiv>
-                      <Button {...buttonAddArticleProps}>Редактировать</Button>
+                      <Button {...buttonEditArticleProps}>Редактировать</Button>
                     </ButtonDiv>
                     <ButtonDiv>
                       <Button {...buttonDeleteArticleProps}>Удалить статью</Button>
@@ -319,19 +323,22 @@ const ButtonDiv = styled.div`
 `;
 
 const mapStateToProps = state => {
-  const {isAuthorized, currentUser} = state;
+  const {listArticles} = state.articles;
+  const {isAuthorized, currentUser} = state.currentUser;
+
   return {
     isAuthorized,
     currentUser,
+    listArticles,
   };
 };
 
 const mapDispatchToProps = dispatch => {
   return {
     setArticlesToStore: (listArticles, articlesCount) =>
-      dispatch(articlesLoaded(listArticles, articlesCount)),
-    setCurrentPage: page => dispatch(setCurrentPage(page)),
+      dispatch(articlesLoad(listArticles, articlesCount)),
+    setCurrentMenuItem: page => dispatch(setCurrentMenuItem(page)),
   };
 };
 
-export default connect(mapStateToProps, mapDispatchToProps)(EditForm);
+export default connect(mapStateToProps, mapDispatchToProps)(EditArticleForm);

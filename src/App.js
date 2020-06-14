@@ -1,54 +1,92 @@
-import React from 'react';
+import React, {Component} from 'react';
 import './App.css';
 import {connect} from 'react-redux';
 import {Route} from 'react-router-dom';
 
-import Home from './components/home/home.jsx';
-import Signup from './components/signup/signup.jsx';
-import Login from './components/login/login.jsx';
-import Article from './components/article/article.jsx';
-import User from './components/user/user.jsx';
-import Add from './components/add/add.jsx';
-import Edit from './components/edit/edit.jsx';
-import {Navbar} from './components/navbar/navbar.jsx';
+import {HomePageContainer} from './components/home';
+import {SignupPageContainer} from './components/signup';
+import {LoginPageContainer} from './components/login';
+import {ArticlePageContainer} from './components/article';
+import {UserProfilePageContainer} from './components/user';
+import {CreateArticlePageContainer} from './components/createArticle';
+import {EditArticlePageContainer} from './components/editArticle';
+import {Navbar} from './components/navbar';
 
-import {setAuthorized, setCurrentUserProfile} from './redux/actions/actionCreators';
-import {getCurrentUser} from './services/serverApi.js';
+import {setAuthorized, setCurrentUserProfile, articlesLoad} from './redux/actions/actionCreators';
+import {
+  currentUserRequest,
+  loadAllArticlesRequest,
+  loadUserArticlesRequest,
+} from './services/serverApi.js';
 import {isAuth} from './services/localStorageApi.js';
-import {basePath} from './services/paths.js';
+import {baseRoutePath} from './services/paths.js';
 
-function App(props) {
-  const updateCurrentUserInStore = async () => {
-    const {setAuth, setCurrentUser} = props;
+class App extends Component {
+  updateCurrentUserInStore = async () => {
+    const {setAuth, setCurrentUser} = this.props;
     if (isAuth()) {
-      const response = await getCurrentUser();
+      const response = await currentUserRequest();
       const {user} = await response.data;
       setCurrentUser(user);
       setAuth(true);
     }
   };
 
-  updateCurrentUserInStore();
+  getListArticles = async () => {
+    const {showMode, showQuantity, setArticlesToStore} = this.props;
+    if (showMode === '') {
+      const response = await loadAllArticlesRequest(showQuantity);
+      const {articles, articlesCount} = await response.data;
+      setArticlesToStore(articles, articlesCount);
+    } else {
+      const response = await loadUserArticlesRequest(showQuantity, showMode);
+      const {articles, articlesCount} = await response.data;
+      setArticlesToStore(articles, articlesCount);
+    }
+  };
 
-  return (
-    <div className="app">
-      <Navbar />
-      <Route exact path={basePath} component={Home} />
-      <Route path={`${basePath}/signup`} component={Signup} />
-      <Route path={`${basePath}/login`} component={Login} />
-      <Route path={`${basePath}/add`} component={Add} />
-      <Route exact path={`${basePath}/articles/:slug`} component={Article} />
-      <Route exact path={`${basePath}/user/:username`} component={User} />
-      <Route path={`${basePath}/articles/:slug/edit`} component={Edit} />
-    </div>
-  );
+  componentDidMount() {
+    this.updateCurrentUserInStore();
+    this.getListArticles();
+  }
+
+  render() {
+    return (
+      <div className="app">
+        <Navbar />
+        <Route exact path={baseRoutePath} component={HomePageContainer} />
+        <Route path={`${baseRoutePath}/signup`} component={SignupPageContainer} />
+        <Route path={`${baseRoutePath}/login`} component={LoginPageContainer} />
+        <Route path={`${baseRoutePath}/add`} component={CreateArticlePageContainer} />
+        <Route exact path={`${baseRoutePath}/articles/:slug`} component={ArticlePageContainer} />
+        <Route
+          exact
+          path={`${baseRoutePath}/user/:username`}
+          component={UserProfilePageContainer}
+        />
+        <Route path={`${baseRoutePath}/articles/:slug/edit`} component={EditArticlePageContainer} />
+      </div>
+    );
+  }
 }
+
+const mapStateToProps = state => {
+  const {showQuantity} = state.articles;
+  const {currentUser} = state.currentUser;
+
+  return {
+    showQuantity,
+    currentUser,
+  };
+};
 
 const mapDispatchToProps = dispatch => {
   return {
+    setArticlesToStore: (articles, articlesCount) =>
+      dispatch(articlesLoad(articles, articlesCount)),
     setCurrentUser: user => dispatch(setCurrentUserProfile(user)),
     setAuth: auth => dispatch(setAuthorized(auth)),
   };
 };
 
-export default connect(null, mapDispatchToProps)(App);
+export default connect(mapStateToProps, mapDispatchToProps)(App);

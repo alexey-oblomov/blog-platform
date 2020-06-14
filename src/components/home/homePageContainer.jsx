@@ -2,10 +2,10 @@ import React from 'react';
 import {connect} from 'react-redux';
 import styled from 'styled-components';
 
-import PersonalArea from '../personalArea/personalArea.jsx';
-import ListArticles from '../listArticles/listArticles.jsx';
+import {PersonalArea} from '../personalArea';
+import {ListArticles} from '../listArticles';
 
-function Home(props) {
+function HomePageContainer(props) {
   const {history, isAuthorized} = props;
   if (!isAuthorized) {
     history.push('/blog-platform/login');
@@ -30,10 +30,10 @@ const WrapDiv = styled.div`
 `;
 
 function mapStateToProps(state) {
-  const {isAuthorized} = state;
+  const {isAuthorized} = state.currentUser;
   return {
     isAuthorized,
   };
 }
 
-export default connect(mapStateToProps)(Home);
+export default connect(mapStateToProps)(HomePageContainer);

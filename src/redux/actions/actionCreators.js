@@ -1,24 +1,23 @@
 import {
-  ARTICLES_LOADED,
-  CURRENT_ARTICLE_LOADED,
+  ARTICLES_LOAD,
   SET_AUTHORIZED,
-  SHOW_MODE,
   CURRENT_USER_PROFILE_LOAD,
-  SET_CURRENT_PAGE,
+  SET_FILTER_BY_AUTHOR,
+  SET_CURRENT_MENU_ITEM,
 } from './actionTypes';
 
-export const articlesLoaded = (listArticles, articlesCount) => {
+export const articlesLoad = (listArticles, articlesCount) => {
   return {
-    type: ARTICLES_LOADED,
+    type: ARTICLES_LOAD,
     listArticles,
     articlesCount,
   };
 };
 
-export const currentArticleLoaded = currentArticle => {
+export const setFilterByAuthor = filterByAuthor => {
   return {
-    type: CURRENT_ARTICLE_LOADED,
-    currentArticle,
+    type: SET_FILTER_BY_AUTHOR,
+    filterByAuthor,
   };
 };
 
@@ -29,13 +28,6 @@ export const setAuthorized = isAuthorized => {
   };
 };
 
-export const showMode = user => {
-  return {
-    type: SHOW_MODE,
-    showMode: user,
-  };
-};
-
 export const setCurrentUserProfile = currentUser => {
   return {
     type: CURRENT_USER_PROFILE_LOAD,
@@ -43,9 +35,9 @@ export const setCurrentUserProfile = currentUser => {
   };
 };
 
-export const setCurrentPage = currentPage => {
+export const setCurrentMenuItem = currentMenuItem => {
   return {
-    type: SET_CURRENT_PAGE,
-    currentPage,
+    type: SET_CURRENT_MENU_ITEM,
+    currentMenuItem,
   };
 };

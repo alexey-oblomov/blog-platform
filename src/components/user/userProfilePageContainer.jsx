@@ -2,24 +2,25 @@ import React from 'react';
 import styled from 'styled-components';
 import {connect} from 'react-redux';
 
-import PersonalArea from '../personalArea/personalArea.jsx';
-import LoginForm from '../login/loginForm.jsx';
-import ArticleFullVersion from './articleFullVersion';
+import {PersonalArea} from '../personalArea';
+import LoginForm from '../forms/loginForm/loginForm.jsx';
+import UserProfile from './userProfile.jsx';
 
-function ArticlePage(props) {
-  const {slug} = props.match.params;
+function UserProfilePageContainer(props) {
+  const {username} = props.match.params;
   const {history, isAuthorized} = props;
 
-  const propsArticleFullVersion = {
+  const propsArticleUserProfile = {
     history,
-    slug,
+    username,
   };
+
   const leftBlock = isAuthorized ? (
     <PersonalArea history={history} />
   ) : (
     <LoginForm history={history} />
   );
-  const mainBlock = <ArticleFullVersion {...propsArticleFullVersion} />;
+  const mainBlock = <UserProfile {...propsArticleUserProfile} />;
 
   return (
     <WrapDiv>
@@ -30,7 +31,7 @@ function ArticlePage(props) {
 }
 
 function mapStateToProps(state) {
-  const {isAuthorized} = state;
+  const {isAuthorized} = state.currentUser;
   return {
     isAuthorized,
   };
@@ -43,4 +44,4 @@ const WrapDiv = styled.div`
   min-height: 800px;
 `;
 
-export default connect(mapStateToProps)(ArticlePage);
+export default connect(mapStateToProps)(UserProfilePageContainer);

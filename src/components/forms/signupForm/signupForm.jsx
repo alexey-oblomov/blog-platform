@@ -2,20 +2,18 @@ import React from 'react';
 import {connect} from 'react-redux';
 import styled from 'styled-components';
 import {Link} from 'react-router-dom';
+
 import {Formik, Form, Field} from 'formik';
 import * as Yup from 'yup';
 
 import {Button} from '@material-ui/core';
 import TextField from '@material-ui/core/TextField';
-import {
-  setAuthorized,
-  setCurrentUserProfile,
-  setCurrentPage,
-} from '../../redux/actions/actionCreators';
-import CustomizedInputPassword from '../inputPassword/inputPassword';
+import {CustomizedInputPassword} from '../customInputPassword';
 
-import {serverAuthorization, serverRegistration} from '../../services/serverApi';
-import {setLoginDataToLocalStorage} from '../../services/localStorageApi.js';
+import {setAuthorized, setCurrentUserProfile} from '../../../redux/actions/actionCreators';
+import {loginRequest, signupRequest} from '../../../services/serverApi';
+import {setTokenToLocalStorage} from '../../../services/localStorageApi.js';
+import {baseRoutePath} from '../../../services/paths.js';
 
 const SignUpSchema = Yup.object().shape({
   name: Yup.string().required('Обязательное поле'),
@@ -34,7 +32,7 @@ function SignupForm(props) {
   };
 
   const handleSubmit = async (values, {setFieldError}) => {
-    const {setAuth, history, setCurrentUser, setArticlesToStore} = props;
+    const {setAuth, history, setCurrentUser} = props;
     const {name, email, password} = values;
     const regData = {
       user: {
@@ -45,7 +43,7 @@ function SignupForm(props) {
     };
 
     try {
-      const regResponse = await serverRegistration(regData);
+      const regResponse = await signupRequest(regData);
       if (regResponse.status === 200) {
         const loginData = {
           user: {
@@ -53,13 +51,14 @@ function SignupForm(props) {
             password,
           },
         };
-        const loginResponse = await serverAuthorization(loginData);
+
+        const loginResponse = await loginRequest(loginData);
         const {user} = await loginResponse.data;
-        setLoginDataToLocalStorage(user);
-        setCurrentUser(user);
-        setAuth(true);
-        setArticlesToStore([], 0);
-        history.push('/blog-platform');
+        const {token} = await user;
+        await setTokenToLocalStorage(token);
+        await setCurrentUser(user);
+        await setAuth(true);
+        history.push(baseRoutePath);
       }
     } catch (error) {
       const {email, username, password} = error.response.data.errors;
@@ -155,14 +154,12 @@ function SignupForm(props) {
 }
 
 function mapStateToProps(state) {
-  const {articles, articlesCount, currentUser, currentMenuItem, isAutorized, errorsSignup} = state;
+  const {articles, articlesCount} = state.articles;
+  const {isAutorized} = state.currentUser;
   return {
     articles,
     articlesCount,
-    currentUser,
-    currentMenuItem,
     isAutorized,
-    errorsSignup,
   };
 }
 
@@ -170,7 +167,6 @@ const mapDispatchToProps = dispatch => {
   return {
     setAuth: auth => dispatch(setAuthorized(auth)),
     setCurrentUser: user => dispatch(setCurrentUserProfile(user)),
-    setCurrentPage: page => dispatch(setCurrentPage(page)),
   };
 };
 

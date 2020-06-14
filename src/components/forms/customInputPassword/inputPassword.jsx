@@ -8,7 +8,7 @@ import {InputAdornment, IconButton} from '@material-ui/core';
 import Visibility from '@material-ui/icons/Visibility';
 import VisibilityOff from '@material-ui/icons/VisibilityOff';
 
-export default function CustomizedInputPassword(props) {
+export function CustomizedInputPassword(props) {
   const {errors, touched, values, name, onChange, onBlur, label, labelWidth, required} = props;
 
   const [state, setValues] = React.useState({

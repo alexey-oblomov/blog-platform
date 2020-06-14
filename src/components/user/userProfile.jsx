@@ -4,30 +4,33 @@ import {connect} from 'react-redux';
 
 import {Button} from '@material-ui/core';
 
-import {setCurrentPage, showMode, articlesLoaded} from '../../redux/actions/actionCreators';
-import {loadUserProfile} from '../../services/serverApi';
-
+import {
+  setCurrentMenuItem,
+  setFilterByAuthor,
+  articlesLoad,
+} from '../../redux/actions/actionCreators';
+import {loadUserProfileRequest} from '../../services/serverApi';
+import {baseRoutePath, defaultAvatarUrl} from '../../services/paths.js';
 class UserProfile extends Component {
   state = {
     profile: {
       username: '',
       bio: '',
-      image: 'https://static.productionready.io/images/smiley-cyrus.jpg',
+      image: defaultAvatarUrl,
       following: false,
     },
   };
 
-  getUserArticles = username => {
-    const {setShowMode, history, setCurrentPage, setArticlesToState} = this.props;
-    setShowMode(username);
-    setCurrentPage('');
-    setArticlesToState([], 0);
-    history.push('/blog-platform');
+  handleGetUserArticles = username => {
+    const {setFilterByAuthor, history, setCurrentMenuItem} = this.props;
+    setFilterByAuthor(username);
+    setCurrentMenuItem('');
+    history.push(baseRoutePath);
   };
 
-  getUserProfileFromServer = async headers => {
+  getUserProfileFromServer = async () => {
     const {username} = this.props;
-    const response = await loadUserProfile(username, headers);
+    const response = await loadUserProfileRequest(username);
     const {profile} = await response.data;
     this.setState({
       profile,
@@ -35,9 +38,9 @@ class UserProfile extends Component {
   };
 
   componentDidMount() {
-    const {setCurrentPage} = this.props;
+    const {setCurrentMenuItem} = this.props;
     this.getUserProfileFromServer();
-    setCurrentPage('');
+    setCurrentMenuItem('');
   }
 
   render() {
@@ -52,7 +55,11 @@ class UserProfile extends Component {
         <UserFollowingDiv>Подписка: {isFollowing}</UserFollowingDiv>
 
         <ButtonDiv>
-          <Button variant="contained" size="small" onClick={() => this.getUserArticles(username)}>
+          <Button
+            variant="contained"
+            size="small"
+            onClick={() => this.handleGetUserArticles(username)}
+          >
             Показать все статьи {username}
           </Button>
         </ButtonDiv>
@@ -62,7 +69,7 @@ class UserProfile extends Component {
 }
 
 const mapStateToProps = state => {
-  const {isAuthorized} = state;
+  const {isAuthorized} = state.currentUser;
   return {
     isAuthorized,
   };
@@ -70,10 +77,10 @@ const mapStateToProps = state => {
 
 const mapDispatchToProps = dispatch => {
   return {
-    setShowMode: user => dispatch(showMode(user)),
-    setCurrentPage: page => dispatch(setCurrentPage(page)),
+    setFilterByAuthor: user => dispatch(setFilterByAuthor(user)),
+    setCurrentMenuItem: menuItem => dispatch(setCurrentMenuItem(menuItem)),
     setArticlesToState: (listArticles, articlesCount) =>
-      dispatch(articlesLoaded(listArticles, articlesCount)),
+      dispatch(articlesLoad(listArticles, articlesCount)),
   };
 };
 

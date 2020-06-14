@@ -2,26 +2,27 @@ import React, {Component} from 'react';
 import styled from 'styled-components';
 import {connect} from 'react-redux';
 
-import Preview from '../article/preview.jsx';
+import Preview from '../article/articlePreview.jsx';
 import Pagination from '@material-ui/lab/Pagination';
 
-import {articlesLoaded, setCurrentPage} from '../../redux/actions/actionCreators';
+import {articlesLoad, setCurrentMenuItem} from '../../redux/actions/actionCreators';
 import {
-  loadAllArticles,
-  loadUserArticles,
-  loadAllArticlesWithOffset,
-  loadUserlArticlesWithOffset,
+  loadAllArticlesRequest,
+  loadUserArticlesRequest,
+  loadAllArticlesWithOffsetRequest,
+  loadUserlArticlesWithOffsetRequest,
 } from '../../services/serverApi';
+import {baseRoutePath} from '../../services/paths.js';
 
 class ListArticles extends Component {
-  getListArticles = async () => {
-    const {showMode, showQuantity, setArticlesToState} = this.props;
-    if (showMode === '') {
-      const response = await loadAllArticles(showQuantity);
+  listArticlesRequest = async () => {
+    const {filterByAuthor, showQuantity, setArticlesToState} = this.props;
+    if (filterByAuthor === '') {
+      const response = await loadAllArticlesRequest(showQuantity);
       const {articles, articlesCount} = await response.data;
       setArticlesToState(articles, articlesCount);
     } else {
-      const response = await loadUserArticles(showQuantity, showMode);
+      const response = await loadUserArticlesRequest(showQuantity, filterByAuthor);
       const {articles, articlesCount} = await response.data;
       setArticlesToState(articles, articlesCount);
     }
@@ -34,44 +35,50 @@ class ListArticles extends Component {
       event.target.parentElement.classList.contains('btnDelete') ||
       event.target.classList.contains('authorDiv');
     if (!btnClassList) {
-      history.push(`/blog-platform/articles/${slug}`);
+      history.push(`${baseRoutePath}/articles/${slug}`);
     }
   };
 
   handleChangePagination = async event => {
-    const {showMode, setArticlesToState, showQuantity} = this.props;
-    const pageNumber = event.currentTarget.textContent;
-    const username = showMode;
-    const offset = pageNumber > 1 ? pageNumber * 9 - 9 : null;
+    let {filterByAuthor, setArticlesToState, showQuantity, articlesCount} = this.props;
+    const pageNumber = Number(event.currentTarget.textContent);
+    const username = filterByAuthor;
+    const offset = pageNumber > 1 ? pageNumber * showQuantity - showQuantity : null;
 
-    if (showMode === '') {
-      const response = await loadAllArticlesWithOffset(showQuantity, offset);
+    const lastPage = Math.ceil(articlesCount / showQuantity);
+    const quantityArticlesOnLastPage = pageNumber * showQuantity - articlesCount;
+    if (pageNumber === lastPage) {
+      showQuantity = quantityArticlesOnLastPage;
+    }
+
+    if (filterByAuthor === '') {
+      const response = await loadAllArticlesWithOffsetRequest(showQuantity, offset);
       const {articles, articlesCount} = await response.data;
       setArticlesToState(articles, articlesCount);
     } else {
-      const response = await loadUserlArticlesWithOffset(showQuantity, username, offset);
+      const response = await loadUserlArticlesWithOffsetRequest(showQuantity, username, offset);
       const {articles, articlesCount} = await response.data;
       setArticlesToState(articles, articlesCount);
     }
   };
 
   componentDidMount() {
-    const {setCurrentPage, showMode, currentUser} = this.props;
-    switch (showMode) {
+    const {setCurrentMenuItem, filterByAuthor, currentUser} = this.props;
+    switch (filterByAuthor) {
       case '':
-        setCurrentPage('showAllArticles');
+        setCurrentMenuItem('showAllArticles');
         break;
       case currentUser.username:
-        setCurrentPage('showMyArticles');
+        setCurrentMenuItem('showMyArticles');
         break;
       default:
-        setCurrentPage('');
+        setCurrentMenuItem('');
     }
-    this.getListArticles();
+    this.listArticlesRequest();
   }
 
   render() {
-    const {listArticles, articlesCount, history} = this.props;
+    const {listArticles, articlesCount, history, showQuantity} = this.props;
     const mapedListArticles = listArticles.map(item => {
       const {slug} = item;
       return (
@@ -83,7 +90,7 @@ class ListArticles extends Component {
       );
     });
 
-    const countPaginationBtns = Math.ceil(articlesCount / 9);
+    const countPaginationBtns = Math.ceil(articlesCount / showQuantity);
     const propsPagination = {
       count: countPaginationBtns,
       variant: 'outlined',
@@ -104,31 +111,33 @@ class ListArticles extends Component {
 }
 
 const mapStateToProps = state => {
-  const {
-    listArticles,
-    articlesCount,
-    isAuthorized,
-    showMode,
-    showQuantity,
-    currentPage,
-    currentUser,
-  } = state;
+  const {listArticles, articlesCount, filterByAuthor, showQuantity} = state.articles;
+  const {isAuthorized, currentUser} = state.currentUser;
+  const {currentMenuItem} = state.personalArea;
+
   return {
     listArticles,
     articlesCount,
     isAuthorized,
-    showMode,
+    filterByAuthor,
     showQuantity,
-    currentPage,
+    currentMenuItem,
     currentUser,
   };
 };
 
 const mapDispatchToProps = dispatch => {
   return {
-    setArticlesToState: (listArticles, articlesCount) =>
-      dispatch(articlesLoaded(listArticles, articlesCount)),
-    setCurrentPage: page => dispatch(setCurrentPage(page)),
+    setArticlesToState: () => {
+      const asyncSetArticlesToState = (listArticles, articlesCount) => {
+        return dispatch => {
+          console.log('Работаем ассинхронно');
+          dispatch(articlesLoad(listArticles, articlesCount));
+        };
+      };
+      asyncSetArticlesToState();
+    },
+    setCurrentMenuItem: page => dispatch(setCurrentMenuItem(page)),
   };
 };
 

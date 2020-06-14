@@ -2,10 +2,10 @@ import React from 'react';
 import {connect} from 'react-redux';
 import styled from 'styled-components';
 
-import LoginForm from './loginForm.jsx';
-import ListArticles from '../listArticles/listArticles.jsx';
+import {LoginForm} from '../forms/loginForm';
+import {ListArticles} from '../listArticles';
 
-function Login(props) {
+function LoginPageContainer(props) {
   const {history, isAuthorized} = props;
   if (isAuthorized) {
     history.push('/blog-platform');
@@ -23,13 +23,13 @@ function Login(props) {
 }
 
 function mapStateToProps(state) {
-  const {isAuthorized} = state;
+  const {isAuthorized} = state.currentUser;
   return {
     isAuthorized,
   };
 }
 
-export default connect(mapStateToProps)(Login);
+export default connect(mapStateToProps)(LoginPageContainer);
 
 const WrapDiv = styled.div`
   display: flex;

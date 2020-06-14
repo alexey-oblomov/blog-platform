@@ -2,17 +2,17 @@ import React from 'react';
 import {connect} from 'react-redux';
 import styled from 'styled-components';
 
-import PersonalArea from '../personalArea/personalArea.jsx';
-import AddForm from './addForm.jsx';
+import {PersonalArea} from '../personalArea';
+import {CreateArticleForm} from '../forms/createArticleForm';
 
-function Add(props) {
+function CreateArticlePageContainer(props) {
   const {history, isAuthorized} = props;
   if (!isAuthorized) {
     history.push('/blog-platform/login');
   }
 
   const leftBlock = isAuthorized ? <PersonalArea history={history} /> : null;
-  const mainBlock = <AddForm history={history} />;
+  const mainBlock = <CreateArticleForm history={history} />;
 
   return (
     <WrapDiv>
@@ -30,10 +30,10 @@ const WrapDiv = styled.div`
 `;
 
 function mapStateToProps(state) {
-  const {isAuthorized} = state;
+  const {isAuthorized} = state.currentUser;
   return {
     isAuthorized,
   };
 }
 
-export default connect(mapStateToProps)(Add);
+export default connect(mapStateToProps)(CreateArticlePageContainer);

@@ -5,55 +5,57 @@ import {connect} from 'react-redux';
 import {Button} from '@material-ui/core';
 
 import {
-  articlesLoaded,
+  articlesLoad,
   setAuthorized,
-  showMode,
+  setFilterByAuthor,
   setCurrentUserProfile,
 } from '../../redux/actions/actionCreators';
-import {getCurrentUser} from '../../services/serverApi';
+import {loadAllArticlesRequest, loadUserArticlesRequest} from '../../services/serverApi';
+import {baseRoutePath, defaultAvatarUrl} from '../../services/paths.js';
 
 class PersonalArea extends Component {
-  logout = () => {
-    const {authorization, history, setCurrentUser, setArticlesToStore} = this.props;
+  getListArticles = async () => {
+    const {filterByAuthor, showQuantity, setArticlesToStore} = this.props;
+    if (filterByAuthor === '') {
+      const response = await loadAllArticlesRequest(showQuantity);
+      const {articles, articlesCount} = await response.data;
+      setArticlesToStore(articles, articlesCount);
+    } else {
+      const response = await loadUserArticlesRequest(showQuantity, filterByAuthor);
+      const {articles, articlesCount} = await response.data;
+      setArticlesToStore(articles, articlesCount);
+    }
+  };
+
+  handleLogout = () => {
+    const {authorization, history, setCurrentUser} = this.props;
     authorization(false);
     localStorage.clear();
     setCurrentUser({});
-    setArticlesToStore([], 0);
-    history.push('/blog-platform/login');
+    history.push(`${baseRoutePath}/login`);
   };
 
   getAllArticles = async () => {
-    const {setShowMode, history, setArticlesToStore} = this.props;
-    setShowMode('');
-    setArticlesToStore([], 0);
-    history.push('/blog-platform/login');
+    const {setFilterByAuthor, history} = this.props;
+    await setFilterByAuthor('');
+    await this.getListArticles();
+    history.push(`${baseRoutePath}/login`);
   };
 
   getMyArticles = async () => {
-    const {setShowMode, currentUser, history, setArticlesToStore} = this.props;
-    setShowMode(currentUser.username);
-    setArticlesToStore([], 0);
-    history.push('/blog-platform/login');
+    const {setFilterByAuthor, currentUser, history} = this.props;
+    await setFilterByAuthor(currentUser.username);
+    await this.getListArticles();
+    history.push(`${baseRoutePath}/login`);
   };
 
-  addArticle = () => {
+  handleCreateArticle = () => {
     const {history} = this.props;
-    history.push('/blog-platform/add');
+    history.push(`${baseRoutePath}/add`);
   };
-
-  getCurrentUserProfile = async () => {
-    const {setCurrentUser} = this.props;
-    const response = await getCurrentUser();
-    const {user} = await response.data;
-    setCurrentUser(user);
-  };
-
-  componentDidMount() {
-    this.getCurrentUserProfile();
-  }
 
   render() {
-    const {currentPage} = this.props;
+    const {currentMenuItem} = this.props;
     const notActiveStyle = {width: '275px', marginBottom: '7px'};
     const activeStyle = {
       border: '1px solid gray',
@@ -62,9 +64,8 @@ class PersonalArea extends Component {
       marginBottom: '7px',
     };
     const {image, username, email, bio} = this.props.currentUser;
-    const avatarImage =
-      image === null ? 'https://static.productionready.io/images/smiley-cyrus.jpg' : image;
-    const info = bio === null ? 'Нет данных' : bio;
+    const avatarImage = image === null ? defaultAvatarUrl : image;
+    const info = bio === null ? '--' : bio;
     return (
       <ContainerDiv>
         <HeadingDiv>Личный кабинет</HeadingDiv>
@@ -84,7 +85,7 @@ class PersonalArea extends Component {
             size="small"
             onClick={this.getAllArticles}
             className="active"
-            style={currentPage === 'showAllArticles' ? activeStyle : notActiveStyle}
+            style={currentMenuItem === 'showAllArticles' ? activeStyle : notActiveStyle}
           >
             Показать все статьи
           </Button>
@@ -92,7 +93,7 @@ class PersonalArea extends Component {
             variant="contained"
             size="small"
             onClick={this.getMyArticles}
-            style={currentPage === 'showMyArticles' ? activeStyle : notActiveStyle}
+            style={currentMenuItem === 'showMyArticles' ? activeStyle : notActiveStyle}
           >
             Показать все мои статьи
           </Button>
@@ -100,8 +101,8 @@ class PersonalArea extends Component {
           <Button
             variant="contained"
             size="small"
-            onClick={this.addArticle}
-            style={currentPage === 'addArticle' ? activeStyle : notActiveStyle}
+            onClick={this.handleCreateArticle}
+            style={currentMenuItem === 'createArticle' ? activeStyle : notActiveStyle}
           >
             Добавить статью
           </Button>
@@ -110,7 +111,7 @@ class PersonalArea extends Component {
             variant="contained"
             size="small"
             color="primary"
-            onClick={this.logout}
+            onClick={this.handleLogout}
             style={{
               width: '275px',
               marginBottom: '5px',
@@ -125,20 +126,24 @@ class PersonalArea extends Component {
 }
 
 const mapStateToProps = state => {
-  const {showQuantity, currentUser, currentPage} = state;
+  const {showQuantity, filterByAuthor} = state.articles;
+  const {currentUser} = state.currentUser;
+  const {currentMenuItem} = state.personalArea;
+
   return {
     showQuantity,
     currentUser,
-    currentPage,
+    filterByAuthor,
+    currentMenuItem,
   };
 };
 
 const mapDispatchToProps = dispatch => {
   return {
     setArticlesToStore: (articles, articlesCount) =>
-      dispatch(articlesLoaded(articles, articlesCount)),
+      dispatch(articlesLoad(articles, articlesCount)),
     authorization: auth => dispatch(setAuthorized(auth)),
-    setShowMode: user => dispatch(showMode(user)),
+    setFilterByAuthor: user => dispatch(setFilterByAuthor(user)),
     setCurrentUser: currentUser => dispatch(setCurrentUserProfile(currentUser)),
   };
 };

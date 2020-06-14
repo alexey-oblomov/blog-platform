@@ -2,10 +2,10 @@ import React from 'react';
 import {connect} from 'react-redux';
 import styled from 'styled-components';
 
-import PersonalArea from '../personalArea/personalArea.jsx';
-import EditForm from './editForm.jsx';
+import {PersonalArea} from '../personalArea';
+import {EditArticleForm} from '../forms/editArticleForm';
 
-function Edit(props) {
+function EditArticlePageContainer(props) {
   const {history, isAuthorized} = props;
   const {slug} = props.match.params;
   if (!isAuthorized) {
@@ -13,7 +13,7 @@ function Edit(props) {
   }
 
   const leftBlock = isAuthorized ? <PersonalArea history={history} /> : null;
-  const mainBlock = <EditForm history={history} slug={slug} />;
+  const mainBlock = <EditArticleForm history={history} slug={slug} />;
 
   return (
     <WrapDiv>
@@ -31,10 +31,10 @@ const WrapDiv = styled.div`
 `;
 
 const mapStateToProps = state => {
-  const {isAuthorized} = state;
+  const {isAuthorized} = state.currentUser;
   return {
     isAuthorized,
   };
 };
 
-export default connect(mapStateToProps)(Edit);
+export default connect(mapStateToProps)(EditArticlePageContainer);

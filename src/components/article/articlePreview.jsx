@@ -1,12 +1,10 @@
 import React, {Component} from 'react';
 import {connect} from 'react-redux';
-import {differenceInMinutes, differenceInHours, differenceInDays} from 'date-fns';
+import {formatDistanceToNow} from 'date-fns';
+import {ru} from 'date-fns/locale';
 import {Link} from 'react-router-dom';
 import styled from 'styled-components';
-
 import {uniqueId} from 'lodash';
-import {articlesLoaded} from '../../redux/actions/actionCreators';
-import {loadArticle, likeIt, unLikeIt, deleteArticleFromServer} from '../../services/serverApi';
 
 import HighlightOffIcon from '@material-ui/icons/HighlightOff';
 import FavoriteBorderIcon from '@material-ui/icons/FavoriteBorder';
@@ -15,6 +13,14 @@ import Tooltip from '@material-ui/core/Tooltip';
 import Chip from '@material-ui/core/Chip';
 import Paper from '@material-ui/core/Paper';
 import Skeleton from '@material-ui/lab/Skeleton';
+
+import {articlesLoad} from '../../redux/actions/actionCreators';
+import {
+  favoriteArticleRequest,
+  unfavoriteArticleRequest,
+  deleteArticleRequest,
+} from '../../services/serverApi';
+import {baseRoutePath} from '../../services/paths.js';
 
 class Preview extends Component {
   state = {
@@ -26,77 +32,62 @@ class Preview extends Component {
     },
   };
 
-  getArticleFromServer = async headers => {
-    try {
-      const {slug} = this.props;
-      const response = await loadArticle(slug, headers);
-      if (response.status === 200) {
-        const {article} = await response.data;
-        this.setState({
-          article,
-        });
-      }
-    } catch (error) {
-      console.log('error 404 ', error);
-    }
+  getArticleFromStoreToState = () => {
+    const {slug, listArticles} = this.props;
+    if (listArticles) {
+      const article = listArticles.find(item => item.slug === slug);
+      this.setState({
+        article,
+      });
+    } else return;
   };
 
-  toggleLike = (slug, favorited) => {
-    if (favorited) {
-      this.setUnlike(slug);
-    } else {
-      this.setLike(slug);
-    }
-  };
-
-  setLike = async slug => {
-    const response = await likeIt(slug);
+  setFavorited = async slug => {
+    const response = await favoriteArticleRequest(slug);
     const {article} = response.data;
     this.setState({
       article,
     });
   };
 
-  setUnlike = async slug => {
-    const response = await unLikeIt(slug);
+  setUnfavorited = async slug => {
+    const response = await unfavoriteArticleRequest(slug);
     const {article} = response.data;
     this.setState({
       article,
     });
   };
 
-  toggleLike = (slug, favorited) => {
+  handleFavoriteChange = (slug, favorited) => {
     if (favorited) {
-      this.setUnlike(slug);
+      this.setUnfavorited(slug);
     } else {
-      this.setLike(slug);
+      this.setFavorited(slug);
     }
   };
 
-  deleteArticle = async slug => {
-    const {history, setArticlesToState} = this.props;
-    const response = await deleteArticleFromServer(slug);
+  handleDeleteArticle = async slug => {
+    const {history} = this.props;
+    const response = await deleteArticleRequest(slug);
     if (response.status === 200) {
-      await setArticlesToState([], 0);
-      history.push('/blog-platform/login');
+      history.push(`${baseRoutePath}/login`);
     }
   };
 
   toUserPage = user => {
-    const {history, setArticlesToState} = this.props;
-    setArticlesToState([], 0);
-    history.push(`/blog-platform/user/${user}`);
+    const {history} = this.props;
+    history.push(`${baseRoutePath}/user/${user}`);
   };
 
   componentDidMount() {
-    this.getArticleFromServer();
+    this.getArticleFromStoreToState();
   }
 
   render() {
     const {slug, currentUser, isAuthorized} = this.props;
     const {article} = this.state;
     const {title, author, tagList, favoritesCount, createdAt, updatedAt, favorited} = article;
-    const linkPath = `/blog-platform/articles/${slug}`;
+    const linkPath = `${baseRoutePath}/articles/${slug}`;
     const isModifed = createdAt === updatedAt ? false : true;
 
     const tags = tagList.map(item => {
@@ -112,84 +103,95 @@ class Preview extends Component {
       );
     });
 
-    const diffDateCreate = date => {
-      let minutes, hours, days;
-      minutes = differenceInMinutes(new Date(), new Date(date));
-      const showMinutes = minutes === 0 ? 'только что' : `${minutes} мин назад`;
-      if (minutes >= 60) {
-        hours = differenceInHours(new Date(), new Date(date));
-        const showMinutes = minutes === 0 ? '' : `${minutes - hours * 60} мин`;
-        if (hours >= 24) {
-          days = differenceInDays(new Date(), new Date(date));
-          const showDays = `${days} дн`;
-          const showHours = hours === 0 && minutes === 0 ? '' : `${hours - days * 24} ч`;
-          return `${showDays} ${showHours}  ${showMinutes} назад`;
-        }
-        return `${hours} ч ${showMinutes} назад`;
+    const getDistanceDateToNow = date => {
+      if (date) {
+        return formatDistanceToNow(new Date(date), {
+          locale: ru,
+        });
       }
-      return `${showMinutes}`;
+      return;
     };
 
-    const createDate = diffDateCreate(createdAt);
-    const updDate = diffDateCreate(updatedAt);
+    const createdDataBlock = () => {
+      if (createdAt) {
+        return (
+          <CreateAtBlock>
+            <GreenStyledText>Создано: </GreenStyledText>
+            <BlackStyledText>{getDistanceDateToNow(createdAt)} назад</BlackStyledText>
+          </CreateAtBlock>
+        );
+      } else {
+        return <Skeleton animation="wave" variant="text" />;
+      }
+    };
 
-    const createdDate = createdAt ? (
-      <div>
-        <GreenTextStyle>Создано: </GreenTextStyle>
-        {createDate}
-      </div>
-    ) : (
-      <Skeleton animation="wave" variant="text" />
-    );
+    const updatedDataBlock = () => {
+      if (updatedAt) {
+        if (isModifed) {
+          return (
+            <RedStyledText>
+              Изменено:
+              {getDistanceDateToNow(updatedAt)} назад
+            </RedStyledText>
+          );
+        } else {
+          return null;
+        }
+      } else {
+        return <Skeleton animation="wave" variant="text" />;
+      }
+    };
 
-    const updateDate = updatedAt ? (
-      isModifed ? (
-        <div>
-          <UpdateDateSpan>Изменено:</UpdateDateSpan>
-          {updDate}
-        </div>
-      ) : null
-    ) : (
-      <Skeleton animation="wave" variant="text" />
-    );
-
-    const btnLike = isAuthorized ? (
-      favorited ? (
-        <Tooltip title="Убрать лайк">
-          <FavoriteIcon
-            color="primary"
-            className="btnLike"
-            alt="like"
-            onClick={() => this.toggleLike(slug, favorited)}
-          />
-        </Tooltip>
-      ) : (
-        <Tooltip title="Поставить лайк">
-          <FavoriteBorderIcon
-            color="primary"
-            className="btnLike"
-            onClick={() => this.toggleLike(slug, favorited)}
-          />
-        </Tooltip>
-      )
-    ) : (
-      <Tooltip title="Для возможности лайкать необходимо авторизоваться">
-        <FavoriteBorderIcon className="btnLike" />
-      </Tooltip>
-    );
-
-    const btnDelete =
-      isAuthorized && currentUser.username === author.username ? (
-        <DeleteDiv className="btnDelete">
-          <Tooltip title="Удалить статью">
-            <HighlightOffIcon
-              className="btnDelete"
-              style={{fontSize: 30}}
-              onClick={() => this.deleteArticle(slug)}
-            />
+    const btnLike = () => {
+      if (isAuthorized) {
+        if (favorited) {
+          return (
+            <Tooltip title="Убрать лайк">
+              <FavoriteIcon
+                color="primary"
+                className="btnLike"
+                alt="like"
+                onClick={() => this.handleFavoriteChange(slug, favorited)}
+              />
+            </Tooltip>
+          );
+        } else {
+          return (
+            <Tooltip title="Поставить лайк">
+              <FavoriteBorderIcon
+                color="primary"
+                className="btnLike"
+                onClick={() => this.handleFavoriteChange(slug, favorited)}
+              />
+            </Tooltip>
+          );
+        }
+      } else {
+        return (
+          <Tooltip title="Для возможности лайкать необходимо авторизоваться">
+            <FavoriteBorderIcon className="btnLike" />
           </Tooltip>
-        </DeleteDiv>
-      ) : null;
+        );
+      }
+    };
+
+    const btnDelete = () => {
+      if (isAuthorized && currentUser.username === author.username) {
+        return (
+          <DeleteDiv className="btnDelete">
+            <Tooltip title="Удалить статью">
+              <HighlightOffIcon
+                className="btnDelete"
+                style={{fontSize: 30}}
+                onClick={() => this.handleDeleteArticle(slug)}
+              />
+            </Tooltip>
+          </DeleteDiv>
+        );
+      } else {
+        return null;
+      }
+    };
 
     return (
       <PreviewDiv>
@@ -197,7 +199,7 @@ class Preview extends Component {
           {title ? (
             <>
               <TitleDiv>{title}</TitleDiv>
-              <DeleteDiv>{btnDelete}</DeleteDiv>
+              <DeleteDiv>{btnDelete()}</DeleteDiv>
             </>
           ) : (
             <Skeleton animation="wave" variant="text" height={20} />
@@ -208,15 +210,17 @@ class Preview extends Component {
           <Tooltip title="Перейти на страницу автора">
             {author.username ? (
               <AuthorDiv className="authorDiv" onClick={() => this.toUserPage(author.username)}>
-                <GreenTextStyle>Автор: </GreenTextStyle>
+                <GreenStyledText>Автор: </GreenStyledText>
                 {author.username}
               </AuthorDiv>
             ) : (
               <Skeleton animation="wave" variant="text" />
             )}
           </Tooltip>
-          <CreatedAtDiv>{createdDate}</CreatedAtDiv>
-          <UpdateAtDiv>{updateDate}</UpdateAtDiv>
+          <CreatedAndUpdateDataBlock>
+            {createdDataBlock()}
+            {updatedDataBlock()}
+          </CreatedAndUpdateDataBlock>
         </MainBlockDiv>
 
         <TagListDiv>
@@ -238,12 +242,12 @@ class Preview extends Component {
 
         <FooterDiv>
           <LikeBlock className="btnLike">
-            <ButtonLike className="btnLike">{btnLike}</ButtonLike>
+            <ButtonLike className="btnLike">{btnLike()}</ButtonLike>
             <LikeCount>{favoritesCount}</LikeCount>
           </LikeBlock>
           <ReadMoreSpan>
             <Link to={linkPath} style={{color: '#3a3833', fontSize: '14px'}}>
-              читать дальше >>
+              читать дальше &gt;&gt;
             </Link>
           </ReadMoreSpan>
         </FooterDiv>
@@ -253,9 +257,11 @@ class Preview extends Component {
 }
 
 function mapStateToProps(state) {
-  const {articles, currentUser, isAuthorized} = state;
+  const {listArticles} = state.articles;
+  const {currentUser, isAuthorized} = state.currentUser;
+
   return {
-    articles,
+    listArticles,
     currentUser,
     isAuthorized,
   };
@@ -264,7 +270,7 @@ function mapStateToProps(state) {
 const mapDispatchToProps = dispatch => {
   return {
     setArticlesToState: (listArticles, articlesCount) =>
-      dispatch(articlesLoaded(listArticles, articlesCount)),
+      dispatch(articlesLoad(listArticles, articlesCount)),
   };
 };
 
@@ -314,21 +320,37 @@ const MainBlockDiv = styled.div`
 const AuthorDiv = styled.div`
   color: #3a3833;
   font-size: 16px;
+  margin-bottom: 3px;
+  font-weight: 500;
   &:hover {
     text-decoration: underline;
   }
 `;
 
-const CreatedAtDiv = styled.div`
-  color: #3a3833;
-  text-align: right;
-  font-size: 15px;
+const CreatedAndUpdateDataBlock = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
 `;
 
-const UpdateAtDiv = styled.div`
-  text-align: right;
-  font-size: 15px;
+const CreateAtBlock = styled.div`
+  display: flex;
+`;
+
+const GreenStyledText = styled.span`
+  font-weight: normal;
+  color: green;
+  font-size: 12px;
+`;
+
+const BlackStyledText = styled.span`
+  color: #3a3833;
+  font-size: 12px;
+`;
+
+const RedStyledText = styled.span`
   color: red;
+  font-size: 12px;
 `;
 
 const TagListDiv = styled.div`
@@ -364,14 +386,4 @@ const ReadMoreSpan = styled.span`
   display: block;
   flex-grow: 1;
   text-align: right;
-`;
-
-const GreenTextStyle = styled.span`
-  color: green;
-  font-size: 12px;
-`;
-
-const UpdateDateSpan = styled.span`
-  color: red;
-  font-size: 12px;
 `;

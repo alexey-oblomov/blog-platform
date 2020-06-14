@@ -1,7 +1,7 @@
 import axios from 'axios';
 import {baseApiUrl} from './paths';
 
-export const getAuthorizationHeaders = () => {
+export const getAuthorizationHeader = () => {
   const token = localStorage.getItem('token');
   let header = null;
   if (token) {
@@ -14,74 +14,74 @@ export const getAuthorizationHeaders = () => {
   return header;
 };
 
-const header = getAuthorizationHeaders();
+const header = getAuthorizationHeader();
 
-export function getCurrentUser() {
+export function currentUserRequest() {
   const url = baseApiUrl + 'user';
   return axios.get(url, header);
 }
 
-export function loadAllArticles(quantity) {
+export function loadAllArticlesRequest(quantity) {
   const url = baseApiUrl + 'articles?limit=' + quantity;
   return axios.get(url, header);
 }
 
-export function loadUserArticles(quantity, username) {
+export function loadUserArticlesRequest(quantity, username) {
   const url = baseApiUrl + 'articles?limit=' + quantity + '&author=' + username;
   return axios.get(url, header);
 }
 
-export function serverAuthorization(loginData) {
+export function loginRequest(loginData) {
   const url = baseApiUrl + 'users/login';
   return axios.post(url, loginData);
 }
 
-export function serverRegistration(regData) {
+export function signupRequest(regData) {
   const url = baseApiUrl + 'users';
   return axios.post(url, regData);
 }
 
-export function loadAllArticlesWithOffset(quantity, offset) {
+export function loadAllArticlesWithOffsetRequest(quantity, offset) {
   const url = baseApiUrl + `articles?limit=${quantity}&offset=${offset}`;
   return axios.get(url, header);
 }
 
-export function loadUserlArticlesWithOffset(quantity, username, offset) {
+export function loadUserlArticlesWithOffsetRequest(quantity, username, offset) {
   const url = baseApiUrl + `articles?limit=${quantity}&author=${username}&offset=${offset}`;
   return axios.get(url, header);
 }
 
-export function loadArticle(slug) {
-  const url = baseApiUrl + `articles/${slug}`;
-  return axios.get(url, header);
-}
+// export function loadArticleRequest(slug) {
+//   const url = baseApiUrl + `articles/${slug}`;
+//   return axios.get(url, header);
+// }
 
-export function likeIt(slug) {
+export function favoriteArticleRequest(slug) {
   const url = baseApiUrl + `articles/${slug}/favorite`;
   return axios.post(url, null, header);
 }
 
-export function unLikeIt(slug) {
+export function unfavoriteArticleRequest(slug) {
   const url = baseApiUrl + `articles/${slug}/favorite`;
   return axios.delete(url, header);
 }
 
-export function createArticle(data) {
+export function createArticleRequest(data) {
   const url = baseApiUrl + 'articles';
   return axios.post(url, data, header);
 }
 
-export function deleteArticleFromServer(slug) {
+export function deleteArticleRequest(slug) {
   const url = baseApiUrl + `articles/${slug}`;
   return axios.delete(url, header);
 }
 
-export function loadUserProfile(username) {
+export function loadUserProfileRequest(username) {
   const url = baseApiUrl + `profiles/${username}`;
   return axios.get(url, header);
 }
 
-export function updateArticle(slug, data) {
+export function updateArticleRequest(slug, data) {
   const url = baseApiUrl + `articles/${slug}`;
   return axios.put(url, data, header);
 }

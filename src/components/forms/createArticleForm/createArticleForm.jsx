@@ -1,9 +1,10 @@
 import React, {Component} from 'react';
 import {connect} from 'react-redux';
 import styled from 'styled-components';
+import {uniqueId} from 'lodash';
+
 import {Formik, Form, Field, FieldArray} from 'formik';
 import * as Yup from 'yup';
-import {uniqueId} from 'lodash';
 
 import {Button} from '@material-ui/core';
 import TextField from '@material-ui/core/TextField';
@@ -11,8 +12,9 @@ import TextareaAutosize from '@material-ui/core/TextareaAutosize';
 import Chip from '@material-ui/core/Chip';
 import Paper from '@material-ui/core/Paper';
 
-import {setCurrentPage, articlesLoaded} from '../../redux/actions/actionCreators';
-import {createArticle} from '../../services/serverApi';
+import {setCurrentMenuItem} from '../../../redux/actions/actionCreators';
+import {createArticleRequest} from '../../../services/serverApi';
+import {baseRoutePath} from '../../../services/paths.js';
 
 const SignUpSchema = Yup.object().shape({
   title: Yup.string().required('Обязательное поле'),
@@ -20,9 +22,8 @@ const SignUpSchema = Yup.object().shape({
   body: Yup.string().required('Обязательное поле'),
 });
 
-class AddForm extends Component {
+class CreateArticleForm extends Component {
   handleSubmit = async values => {
-    const {setArticlesToStore} = this.props;
     const {title, description, body, tagList} = values;
     const newArticle = {
       article: {
@@ -32,14 +33,13 @@ class AddForm extends Component {
         tagList,
       },
     };
-    await createArticle(newArticle);
-    await setArticlesToStore([], 0);
-    this.props.history.push('/blog-platform/');
+    await createArticleRequest(newArticle);
+    this.props.history.push(baseRoutePath);
   };
 
   componentDidMount() {
-    const {setCurrentPage} = this.props;
-    setCurrentPage('addArticle');
+    const {setCurrentMenuItem} = this.props;
+    setCurrentMenuItem('createArticle');
   }
 
   render() {
@@ -75,7 +75,7 @@ class AddForm extends Component {
             component: TextField,
             label: 'Название статьи',
             variant: 'outlined',
-            error: touched.title && errors.title,
+            error: touched.title && Boolean(errors.title),
             value: values.title,
             onChange: handleChange('title'),
             onBlur: handleBlur('title'),
@@ -90,7 +90,7 @@ class AddForm extends Component {
             component: TextField,
             label: 'Краткое описание',
             variant: 'outlined',
-            error: touched.description && errors.description,
+            error: touched.description && Boolean(errors.description),
             value: values.description,
             onChange: handleChange('description'),
             onBlur: handleBlur('description'),
@@ -274,10 +274,8 @@ const TagsListDiv = styled.div`
 
 const mapDispatchToProps = dispatch => {
   return {
-    setArticlesToStore: (listArticles, articlesCount) =>
-      dispatch(articlesLoaded(listArticles, articlesCount)),
-    setCurrentPage: page => dispatch(setCurrentPage(page)),
+    setCurrentMenuItem: page => dispatch(setCurrentMenuItem(page)),
   };
 };
 
-export default connect(null, mapDispatchToProps)(AddForm);
+export default connect(null, mapDispatchToProps)(CreateArticleForm);

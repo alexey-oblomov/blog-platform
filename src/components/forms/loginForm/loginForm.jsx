@@ -7,17 +7,12 @@ import {Formik, Form, Field} from 'formik';
 
 import {Button} from '@material-ui/core';
 import TextField from '@material-ui/core/TextField';
+import {CustomizedInputPassword} from '../customInputPassword';
 
-import {
-  setAuthorized,
-  setCurrentUserProfile,
-  setCurrentPage,
-  articlesLoaded,
-} from '../../redux/actions/actionCreators';
-import CustomizedInputPassword from '../inputPassword/inputPassword';
-
-import {serverAuthorization} from '../../services/serverApi.js';
-import {setLoginDataToLocalStorage} from '../../services/localStorageApi.js';
+import {setAuthorized, setCurrentUserProfile} from '../../../redux/actions/actionCreators';
+import {loginRequest} from '../../../services/serverApi.js';
+import {setTokenToLocalStorage} from '../../../services/localStorageApi.js';
+import {baseRoutePath} from '../../../services/paths.js';
 
 function LoginForm(props) {
   const initialValues = {
@@ -26,7 +21,7 @@ function LoginForm(props) {
   };
 
   const handleSubmit = async (values, {setFieldError}) => {
-    const {setAuth, history, setCurrentUser, setArticlesToStore} = props;
+    const {setAuth, history, setCurrentUser} = props;
     const {email, password} = values;
     const loginData = {
       user: {
@@ -36,20 +31,22 @@ function LoginForm(props) {
     };
 
     try {
-      const loginResponse = await serverAuthorization(loginData);
+      const loginResponse = await loginRequest(loginData);
       if (loginResponse.status === 200) {
         const {user} = await loginResponse.data;
-        await setLoginDataToLocalStorage(user);
-        setCurrentUser(user);
-        setAuth(true);
-        await setArticlesToStore([], 0);
-        history.push('/blog-platform');
+        const {token} = await user;
+        await setTokenToLocalStorage(token);
+        await setCurrentUser(user);
+        await setAuth(true);
+        history.push(baseRoutePath);
       }
     } catch (error) {
       setFieldError('email', 'Некорректные данные');
       setFieldError('password', ' ');
     }
   };
+
+  const linkStyle = {color: '#3a3833', marginTop: '20px'};
 
   return (
     <Formik initialValues={initialValues} onSubmit={handleSubmit}>
@@ -105,7 +102,7 @@ function LoginForm(props) {
                 >
                   Войти
                 </Button>
-                <Link to="/blog-platform/signup" style={{color: '#3a3833', marginTop: '20px'}}>
+                <Link to="/blog-platform/signup" style={linkStyle}>
                   Регистрация
                 </Link>
               </WrapperDiv>
@@ -121,9 +118,6 @@ const mapDispatchToProps = dispatch => {
   return {
     setAuth: auth => dispatch(setAuthorized(auth)),
     setCurrentUser: user => dispatch(setCurrentUserProfile(user)),
-    setCurrentPage: page => dispatch(setCurrentPage(page)),
-    setArticlesToStore: (articles, articlesCount) =>
-      dispatch(articlesLoaded(articles, articlesCount)),
   };
 };
 
