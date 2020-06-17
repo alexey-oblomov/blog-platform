@@ -4,32 +4,29 @@ import styled from 'styled-components';
 import {connect} from 'react-redux';
 import {Button} from '@material-ui/core';
 
+import {setFilterByAuthor} from '../../redux/actions/articles/createActions.js';
 import {
-  articlesLoad,
-  setAuthorized,
-  setFilterByAuthor,
   setCurrentUserProfile,
-} from '../../redux/actions/actionCreators';
-import {loadAllArticlesRequest, loadUserArticlesRequest} from '../../services/serverApi';
+  setAuthorized,
+} from '../../redux/actions/currentUser/createActions.js';
+
+import {getArticlesFromServerRequest} from '../../services/serverApi';
 import {baseRoutePath, defaultAvatarUrl} from '../../services/paths.js';
 
 class PersonalArea extends Component {
-  getListArticles = async () => {
-    const {filterByAuthor, showQuantity, setArticlesToStore} = this.props;
-    if (filterByAuthor === '') {
-      const response = await loadAllArticlesRequest(showQuantity);
-      const {articles, articlesCount} = await response.data;
-      setArticlesToStore(articles, articlesCount);
-    } else {
-      const response = await loadUserArticlesRequest(showQuantity, filterByAuthor);
-      const {articles, articlesCount} = await response.data;
-      setArticlesToStore(articles, articlesCount);
-    }
+  updateListArticles = async () => {
+    const {filterByAuthor, showQuantity, setArticlesToStore, setArticlesCountToStore} = this.props;
+
+    const offset = 0;
+    const response = await getArticlesFromServerRequest(showQuantity, offset, filterByAuthor);
+    const {articles: listArticles, articlesCount} = await response.data;
+    setArticlesCountToStore({articlesCount});
+    setArticlesToStore({listArticles});
   };
 
   handleLogout = () => {
     const {authorization, history, setCurrentUser} = this.props;
-    authorization(false);
+    authorization({isAuthorized: false});
     localStorage.clear();
     setCurrentUser({});
     history.push(`${baseRoutePath}/login`);
@@ -37,15 +34,17 @@ class PersonalArea extends Component {
 
   getAllArticles = async () => {
     const {setFilterByAuthor, history} = this.props;
-    await setFilterByAuthor('');
-    await this.getListArticles();
+    const filterByAuthor = '';
+    await setFilterByAuthor({filterByAuthor});
+    await this.updateListArticles();
     history.push(`${baseRoutePath}/login`);
   };
 
   getMyArticles = async () => {
     const {setFilterByAuthor, currentUser, history} = this.props;
-    await setFilterByAuthor(currentUser.username);
-    await this.getListArticles();
+    const {username} = currentUser;
+    await setFilterByAuthor({filterByAuthor: username});
+    await this.updateListArticles();
     history.push(`${baseRoutePath}/login`);
   };
 
@@ -140,8 +139,6 @@ const mapStateToProps = state => {
 
 const mapDispatchToProps = dispatch => {
   return {
-    setArticlesToStore: (articles, articlesCount) =>
-      dispatch(articlesLoad(articles, articlesCount)),
     authorization: auth => dispatch(setAuthorized(auth)),
     setFilterByAuthor: user => dispatch(setFilterByAuthor(user)),
     setCurrentUser: currentUser => dispatch(setCurrentUserProfile(currentUser)),

@@ -4,11 +4,8 @@ import {connect} from 'react-redux';
 
 import {Button} from '@material-ui/core';
 
-import {
-  setCurrentMenuItem,
-  setFilterByAuthor,
-  articlesLoad,
-} from '../../redux/actions/actionCreators';
+import {setFilterByAuthor} from '../../redux/actions/articles/createActions.js';
+import {setCurrentMenuItem} from '../../redux/actions/personalArea/createActions.js';
 import {loadUserProfileRequest} from '../../services/serverApi';
 import {baseRoutePath, defaultAvatarUrl} from '../../services/paths.js';
 class UserProfile extends Component {
@@ -23,7 +20,8 @@ class UserProfile extends Component {
 
   handleGetUserArticles = username => {
     const {setFilterByAuthor, history, setCurrentMenuItem} = this.props;
-    setFilterByAuthor(username);
+    const filterByAuthor = username;
+    setFilterByAuthor({filterByAuthor});
     setCurrentMenuItem('');
     history.push(baseRoutePath);
   };
@@ -79,8 +77,6 @@ const mapDispatchToProps = dispatch => {
   return {
     setFilterByAuthor: user => dispatch(setFilterByAuthor(user)),
     setCurrentMenuItem: menuItem => dispatch(setCurrentMenuItem(menuItem)),
-    setArticlesToState: (listArticles, articlesCount) =>
-      dispatch(articlesLoad(listArticles, articlesCount)),
   };
 };
 

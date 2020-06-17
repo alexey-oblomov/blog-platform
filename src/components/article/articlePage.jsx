@@ -1,4 +1,4 @@
-import React, {Component} from 'react';
+import React, {useState, useEffect} from 'react';
 import styled from 'styled-components';
 import {connect} from 'react-redux';
 import {uniqueId} from 'lodash';
@@ -12,7 +12,8 @@ import Chip from '@material-ui/core/Chip';
 import Paper from '@material-ui/core/Paper';
 import Tooltip from '@material-ui/core/Tooltip';
 
-import {setCurrentMenuItem} from '../../redux/actions/actionCreators';
+import {setCurrentMenuItem} from '../../redux/actions/personalArea/createActions.js';
+
 import {
   favoriteArticleRequest,
   unfavoriteArticleRequest,
@@ -20,208 +21,219 @@ import {
 } from '../../services/serverApi';
 import {baseRoutePath} from '../../services/paths.js';
 
-class ArticleFullVersion extends Component {
-  state = {
-    article: {
-      title: null,
-      author: {username: null},
-      body: null,
-      favorited: null,
-      favoritesCount: null,
-      tagList: [],
-    },
-  };
+function ArticlePage(props) {
+  const [article, setArticle] = useState({
+    title: null,
+    author: {username: null},
+    body: null,
+    favorited: null,
+    favoritesCount: null,
+    tagList: [],
+  });
 
-  getArticleFromStoreToState = async () => {
-    const {slug, listArticles} = this.props;
+  const getArticleFromStoreToState = async () => {
+    const {slug, listArticles} = props;
     if (listArticles) {
       const article = listArticles.find(item => item.slug === slug);
-      this.setState({
-        article,
-      });
-    } else return;
-  };
-
-  handleFavoriteChange = favorited => {
-    if (favorited) {
-      this.setUnfavorited();
-    } else {
-      this.setFavorited();
+      setArticle(article);
     }
   };
 
-  setFavorited = async () => {
-    const {slug} = this.props;
+  useEffect(() => {
+    const {setCurrentMenuItem} = props;
+    getArticleFromStoreToState();
+    setCurrentMenuItem('');
+  });
+
+  // useEffect(async () => {
+  //   const { slug } = props;
+  //   const response = await favoriteArticleRequest(slug);
+  //   const { article } = await response.data;
+  //   await setArticle(article);
+  // }, {});
+
+  // useEffect(async () => {
+  //   const { slug } = props;
+  //   const response = await unfavoriteArticleRequest(slug);
+  //   const { article } = await response.data;
+  //   await setArticle(article);
+  // }, {});
+
+  if (!article) {
+    return null;
+  }
+
+  const handleFavoriteChange = isFavorited => {
+    if (isFavorited) {
+      setUnfavorited();
+    } else {
+      setFavorited();
+    }
+  };
+
+  const setFavorited = async () => {
+    const {slug} = props;
     const response = await favoriteArticleRequest(slug);
-    const {article} = response.data;
-    this.setState({
-      article,
-    });
+    const {article} = await response.data;
+    console.log('article: ', article);
+    // await setArticle(article);
   };
 
-  setUnfavorited = async () => {
-    const {slug} = this.props;
+  const setUnfavorited = async () => {
+    const {slug} = props;
     const response = await unfavoriteArticleRequest(slug);
-    const {article} = response.data;
-    this.setState({
-      article,
-    });
+    // const { article } = await response.data;
+    // console.log('article: ', article);
+    // await setArticle(article);
   };
 
-  toEdit = () => {
-    const {slug, history} = this.props;
+  const handleToEditArticle = () => {
+    const {slug, history} = props;
     history.push(`${baseRoutePath}/articles/${slug}/edit`);
   };
 
-  handleDeleteArticle = async () => {
-    const {slug, history} = this.props;
+  const handleDeleteArticle = async () => {
+    const {slug, history} = props;
     const response = await deleteArticleRequest(slug);
     if (response.status === 200) {
       history.push(baseRoutePath);
     }
   };
 
-  componentDidMount() {
-    const {setCurrentMenuItem} = this.props;
-    this.getArticleFromStoreToState();
-    setCurrentMenuItem('');
-  }
+  const {isAuthorized, currentUser} = props;
+  const {
+    title,
+    author,
+    body,
+    tagList = [],
+    favorited: isFavorited,
+    favoritesCount,
+    createdAt,
+    updatedAt,
+  } = article;
 
-  render() {
-    const {isAuthorized, currentUser} = this.props;
-    const {article} = this.state;
+  const paperProps = {
+    component: 'ul',
+    className: '',
+    elevation: 0,
+    style: {
+      display: 'flex',
+      justifyContent: 'flex-start',
+      flexWrap: 'wrap',
+      listStyle: 'none',
+      paddingLeft: '10px',
+    },
+  };
 
-    if (!article) {
-      return null;
+  const chipProps = {
+    disabled: true,
+    color: 'primary',
+    style: {maxWidth: '120px', overflow: 'hidden'},
+  };
+
+  const tags = () => (
+    <TagsListDiv>
+      <Paper {...paperProps}>
+        {tagList.map(item => {
+          return (
+            <li key={uniqueId()} style={{margin: '5px'}}>
+              <Chip {...chipProps} label={item} />
+            </li>
+          );
+        })}
+      </Paper>
+    </TagsListDiv>
+  );
+
+  const diffDateCreate = date => {
+    if (!date) {
+      return;
     }
+    return formatDistanceToNow(new Date(date), {
+      locale: ru,
+    });
+  };
 
-    let {title, author, body, tagList, favorited, favoritesCount, createdAt, updatedAt} = article;
-    const isModifed = createdAt === updatedAt ? false : true;
-    const tags = (
-      <TagsListDiv>
-        <Paper
-          component="ul"
-          className=""
-          elevation={0}
-          style={{
-            display: 'flex',
-            justifyContent: 'flex-start',
-            flexWrap: 'wrap',
-            listStyle: 'none',
-            paddingLeft: '10px',
-          }}
-        >
-          {tagList.map(item => {
-            return (
-              <li key={uniqueId()} style={{margin: '5px'}}>
-                <Chip
-                  label={item}
-                  disabled
-                  color="primary"
-                  style={{maxWidth: '120px', overflow: 'hidden'}}
-                />
-              </li>
-            );
-          })}
-        </Paper>
-      </TagsListDiv>
-    );
+  const createData = diffDateCreate(createdAt);
+  const updateData = diffDateCreate(updatedAt);
+  const isModifed = createdAt === updatedAt ? false : true;
 
-    const diffDateCreate = date => {
-      if (!date) {
-        return;
-      }
-      return formatDistanceToNow(new Date(date), {
-        locale: ru,
-      });
-    };
-
-    const createData = diffDateCreate(createdAt);
-    const updateData = diffDateCreate(updatedAt);
-
-    const createDateBlock = (
-      <CreateDateDiv>
-        <span>Создано: </span>
-        {createData} назад
-      </CreateDateDiv>
-    );
-
-    const updateDateBlock = isModifed ? (
-      <UpdateDateDiv>
-        <span>Изменено: </span>
-        {updateData} назад
-      </UpdateDateDiv>
+  const btnEdit =
+    isAuthorized && currentUser.username === author.username ? (
+      <ButtonDiv>
+        <Button variant="contained" size="small" onClick={handleToEditArticle}>
+          Редактировать
+        </Button>
+      </ButtonDiv>
     ) : null;
 
-    const btnEdit =
-      isAuthorized && currentUser.username === author.username ? (
-        <ButtonDiv>
-          <Button variant="contained" size="small" onClick={this.toEdit}>
-            Редактировать
-          </Button>
-        </ButtonDiv>
-      ) : null;
+  const btnDelete =
+    isAuthorized && currentUser.username === author.username ? (
+      <ButtonDiv>
+        <Button variant="contained" size="small" onClick={handleDeleteArticle}>
+          Удалить
+        </Button>
+      </ButtonDiv>
+    ) : null;
 
-    const btnDelete =
-      isAuthorized && currentUser.username === author.username ? (
-        <ButtonDiv>
-          <Button variant="contained" size="small" onClick={this.handleDeleteArticle}>
-            Удалить
-          </Button>
-        </ButtonDiv>
-      ) : null;
+  const btnLikeProps = {
+    className: 'btnLike',
+    color: 'primary',
+    style: {fontSize: 30},
+    onClick: event => handleFavoriteChange(isFavorited),
+  };
 
-    const btnLike = isAuthorized ? (
-      favorited ? (
+  const btnLike = () =>
+    isAuthorized ? (
+      isFavorited ? (
         <Tooltip title="Убрать лайк">
-          <FavoriteIcon
-            className="btnLike"
-            alt="like"
-            color="primary"
-            style={{fontSize: 30}}
-            onClick={event => this.handleFavoriteChange(favorited)}
-          />
+          <FavoriteIcon {...btnLikeProps} />
         </Tooltip>
       ) : (
         <Tooltip title="Поставить лайк">
-          <FavoriteBorderIcon
-            className="btnLike"
-            color="primary"
-            style={{fontSize: 30}}
-            onClick={event => this.handleFavoriteChange(favorited)}
-          />
+          <FavoriteBorderIcon {...btnLikeProps} />
         </Tooltip>
       )
     ) : (
       <Tooltip title="Для возможности лайкать необходимо авторизоваться">
-        <FavoriteBorderIcon className="btnLike" alt="like" />
+        <FavoriteBorderIcon {...btnLikeProps} />
       </Tooltip>
     );
 
-    return (
-      <>
-        <ContainerDiv>
-          <ButtonBlockDiv>
-            {btnEdit}
-            {btnDelete}
-          </ButtonBlockDiv>
+  return (
+    <ContainerDiv>
+      <ButtonBlockDiv>
+        {btnEdit}
+        {btnDelete}
+      </ButtonBlockDiv>
 
-          <MainSectionDiv>
-            <TitleDiv>{title}</TitleDiv>
-            <AuthorDiv>{author.username}</AuthorDiv>
-            {createDateBlock}
-            {updateDateBlock}
-            <BodyDiv>{body}</BodyDiv>
-            <div>{tags}</div>
-            <LikeBlock className="btnLike">
-              <ButtonLike className="btnLike">{btnLike}</ButtonLike>
-              <LikeCount>{favoritesCount}</LikeCount>
-            </LikeBlock>
-          </MainSectionDiv>
-        </ContainerDiv>
-      </>
-    );
-  }
+      <MainSectionDiv>
+        <TitleDiv>{title}</TitleDiv>
+        <AuthorDiv>{author.username}</AuthorDiv>
+
+        <CreateDateDiv>
+          <span>Создано: </span>
+          {createData} назад
+        </CreateDateDiv>
+
+        <UpdateDateDiv>
+          {isModifed ? (
+            <>
+              <span>Изменено: </span>
+              {updateData} назад
+            </>
+          ) : null}
+        </UpdateDateDiv>
+
+        <BodyDiv>{body}</BodyDiv>
+        <div>{tags()}</div>
+        <LikeBlock className="btnLike">
+          <ButtonLike className="btnLike">{btnLike()}</ButtonLike>
+          <LikeCount>{favoritesCount}</LikeCount>
+        </LikeBlock>
+      </MainSectionDiv>
+    </ContainerDiv>
+  );
 }
 
 const ContainerDiv = styled.div`
@@ -253,22 +265,19 @@ const ButtonDiv = styled.div`
 const TitleDiv = styled.div`
   font-size: 22px;
   overflow-wrap: break-word;
-  padding: 10px;
+  padding-left: 10px;
 `;
 
 const AuthorDiv = styled.div`
-  margin-bottom: 10px;
   padding: 10px;
 `;
 
 const CreateDateDiv = styled.div`
-  margin-bottom: 10px;
-  padding: 10px;
+  padding-left: 10px;
 `;
 
 const UpdateDateDiv = styled.div`
-  margin-bottom: 10px;
-  padding: 10px;
+  padding-left: 10px;
   color: red;
 `;
 
@@ -313,4 +322,4 @@ const mapDispatchToProps = dispatch => {
   };
 };
 
-export default connect(mapStateToProps, mapDispatchToProps)(ArticleFullVersion);
+export default connect(mapStateToProps, mapDispatchToProps)(ArticlePage);

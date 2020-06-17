@@ -13,7 +13,7 @@ import Chip from '@material-ui/core/Chip';
 import Paper from '@material-ui/core/Paper';
 
 import {deleteArticleRequest, updateArticleRequest} from '../../../services/serverApi';
-import {articlesLoad, setCurrentMenuItem} from '../../../redux/actions/actionCreators';
+import {setCurrentMenuItem} from '../../../redux/actions/personalArea/createActions.js';
 import {baseRoutePath} from '../../../services/paths.js';
 
 const SignUpSchema = Yup.object().shape({
@@ -335,8 +335,6 @@ const mapStateToProps = state => {
 
 const mapDispatchToProps = dispatch => {
   return {
-    setArticlesToStore: (listArticles, articlesCount) =>
-      dispatch(articlesLoad(listArticles, articlesCount)),
     setCurrentMenuItem: page => dispatch(setCurrentMenuItem(page)),
   };
 };

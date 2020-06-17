@@ -10,7 +10,11 @@ import {Button} from '@material-ui/core';
 import TextField from '@material-ui/core/TextField';
 import {CustomizedInputPassword} from '../customInputPassword';
 
-import {setAuthorized, setCurrentUserProfile} from '../../../redux/actions/actionCreators';
+// import {setAuthorized, setCurrentUserProfile} from '../../../redux/actions/actionCreators';
+import {
+  setCurrentUserProfile,
+  setAuthorized,
+} from '../../../redux/actions/currentUser/createActions.js';
 import {loginRequest, signupRequest} from '../../../services/serverApi';
 import {setTokenToLocalStorage} from '../../../services/localStorageApi.js';
 import {baseRoutePath} from '../../../services/paths.js';

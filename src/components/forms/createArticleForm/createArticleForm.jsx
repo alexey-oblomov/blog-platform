@@ -12,7 +12,8 @@ import TextareaAutosize from '@material-ui/core/TextareaAutosize';
 import Chip from '@material-ui/core/Chip';
 import Paper from '@material-ui/core/Paper';
 
-import {setCurrentMenuItem} from '../../../redux/actions/actionCreators';
+// import {setCurrentMenuItem} from '../../../redux/actions/actionCreators';
+import {setCurrentMenuItem} from '../../../redux/actions/personalArea/createActions.js';
 import {createArticleRequest} from '../../../services/serverApi';
 import {baseRoutePath} from '../../../services/paths.js';
 

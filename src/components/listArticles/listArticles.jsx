@@ -5,27 +5,16 @@ import {connect} from 'react-redux';
 import Preview from '../article/articlePreview.jsx';
 import Pagination from '@material-ui/lab/Pagination';
 
-import {articlesLoad, setCurrentMenuItem} from '../../redux/actions/actionCreators';
-import {
-  loadAllArticlesRequest,
-  loadUserArticlesRequest,
-  loadAllArticlesWithOffsetRequest,
-  loadUserlArticlesWithOffsetRequest,
-} from '../../services/serverApi';
+import {setCurrentMenuItem} from '../../redux/actions/personalArea/createActions.js';
+import {getArticlesFromServerRequest} from '../../services/serverApi';
 import {baseRoutePath} from '../../services/paths.js';
+import {loadArticles} from '../../redux/actions/articles/createActions.js';
 
 class ListArticles extends Component {
-  listArticlesRequest = async () => {
-    const {filterByAuthor, showQuantity, setArticlesToState} = this.props;
-    if (filterByAuthor === '') {
-      const response = await loadAllArticlesRequest(showQuantity);
-      const {articles, articlesCount} = await response.data;
-      setArticlesToState(articles, articlesCount);
-    } else {
-      const response = await loadUserArticlesRequest(showQuantity, filterByAuthor);
-      const {articles, articlesCount} = await response.data;
-      setArticlesToState(articles, articlesCount);
-    }
+  updateListArticles = () => {
+    const {filterByAuthor, showQuantity, setArticlesToStoreAsync} = this.props;
+    const offsetArticles = null;
+    setArticlesToStoreAsync(showQuantity, offsetArticles, filterByAuthor);
   };
 
   openArticle = (event, slug) => {
@@ -40,26 +29,19 @@ class ListArticles extends Component {
   };
 
   handleChangePagination = async event => {
-    let {filterByAuthor, setArticlesToState, showQuantity, articlesCount} = this.props;
+    let {filterByAuthor, showQuantity, articlesCount} = this.props;
     const pageNumber = Number(event.currentTarget.textContent);
     const username = filterByAuthor;
     const offset = pageNumber > 1 ? pageNumber * showQuantity - showQuantity : null;
 
     const lastPage = Math.ceil(articlesCount / showQuantity);
-    const quantityArticlesOnLastPage = pageNumber * showQuantity - articlesCount;
+    const quantityArticlesOnLastPage = articlesCount - (pageNumber - 1) * showQuantity;
     if (pageNumber === lastPage) {
       showQuantity = quantityArticlesOnLastPage;
     }
 
-    if (filterByAuthor === '') {
-      const response = await loadAllArticlesWithOffsetRequest(showQuantity, offset);
-      const {articles, articlesCount} = await response.data;
-      setArticlesToState(articles, articlesCount);
-    } else {
-      const response = await loadUserlArticlesWithOffsetRequest(showQuantity, username, offset);
-      const {articles, articlesCount} = await response.data;
-      setArticlesToState(articles, articlesCount);
-    }
+    const response = await getArticlesFromServerRequest(showQuantity, offset, username);
+    const {articles: listArticles, articlesCount: count} = await response.data;
   };
 
   componentDidMount() {
@@ -74,11 +56,11 @@ class ListArticles extends Component {
       default:
         setCurrentMenuItem('');
     }
-    this.listArticlesRequest();
+    this.updateListArticles();
   }
 
   render() {
-    const {listArticles, articlesCount, history, showQuantity} = this.props;
+    const {listArticles = [], articlesCount, history, showQuantity} = this.props;
     const mapedListArticles = listArticles.map(item => {
       const {slug} = item;
       return (
@@ -111,9 +93,10 @@ class ListArticles extends Component {
 }
 
 const mapStateToProps = state => {
-  const {listArticles, articlesCount, filterByAuthor, showQuantity} = state.articles;
-  const {isAuthorized, currentUser} = state.currentUser;
-  const {currentMenuItem} = state.personalArea;
+  const {articles, currentUser: user, personalArea} = state;
+  const {listArticles, articlesCount, filterByAuthor, showQuantity} = articles;
+  const {isAuthorized, currentUser} = user;
+  const {currentMenuItem} = personalArea;
 
   return {
     listArticles,
@@ -128,14 +111,8 @@ const mapStateToProps = state => {
 
 const mapDispatchToProps = dispatch => {
   return {
-    setArticlesToState: () => {
-      const asyncSetArticlesToState = (listArticles, articlesCount) => {
-        return dispatch => {
-          console.log('Работаем ассинхронно');
-          dispatch(articlesLoad(listArticles, articlesCount));
-        };
-      };
-      asyncSetArticlesToState();
+    setArticlesToStoreAsync: (showQuantity, offsetArticles, filterByAuthor) => {
+      dispatch(loadArticles(showQuantity, offsetArticles, filterByAuthor));
     },
     setCurrentMenuItem: page => dispatch(setCurrentMenuItem(page)),
   };

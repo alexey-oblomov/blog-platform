@@ -9,7 +9,10 @@ import {Button} from '@material-ui/core';
 import TextField from '@material-ui/core/TextField';
 import {CustomizedInputPassword} from '../customInputPassword';
 
-import {setAuthorized, setCurrentUserProfile} from '../../../redux/actions/actionCreators';
+import {
+  setCurrentUserProfile,
+  setAuthorized,
+} from '../../../redux/actions/currentUser/createActions.js';
 import {loginRequest} from '../../../services/serverApi.js';
 import {setTokenToLocalStorage} from '../../../services/localStorageApi.js';
 import {baseRoutePath} from '../../../services/paths.js';
@@ -33,11 +36,11 @@ function LoginForm(props) {
     try {
       const loginResponse = await loginRequest(loginData);
       if (loginResponse.status === 200) {
-        const {user} = await loginResponse.data;
-        const {token} = await user;
+        const {user: currentUser} = await loginResponse.data;
+        const {token} = await currentUser;
         await setTokenToLocalStorage(token);
-        await setCurrentUser(user);
-        await setAuth(true);
+        await setCurrentUser({currentUser});
+        await setAuth({isAuthorized: true});
         history.push(baseRoutePath);
       }
     } catch (error) {

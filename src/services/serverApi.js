@@ -21,16 +21,6 @@ export function currentUserRequest() {
   return axios.get(url, header);
 }
 
-export function loadAllArticlesRequest(quantity) {
-  const url = baseApiUrl + 'articles?limit=' + quantity;
-  return axios.get(url, header);
-}
-
-export function loadUserArticlesRequest(quantity, username) {
-  const url = baseApiUrl + 'articles?limit=' + quantity + '&author=' + username;
-  return axios.get(url, header);
-}
-
 export function loginRequest(loginData) {
   const url = baseApiUrl + 'users/login';
   return axios.post(url, loginData);
@@ -41,13 +31,11 @@ export function signupRequest(regData) {
   return axios.post(url, regData);
 }
 
-export function loadAllArticlesWithOffsetRequest(quantity, offset) {
-  const url = baseApiUrl + `articles?limit=${quantity}&offset=${offset}`;
-  return axios.get(url, header);
-}
-
-export function loadUserlArticlesWithOffsetRequest(quantity, username, offset) {
-  const url = baseApiUrl + `articles?limit=${quantity}&author=${username}&offset=${offset}`;
+export function getArticlesFromServerRequest(quantity, offset, username) {
+  const authorFilter = username ? '&author=' + username : '';
+  const articlesQuantity = 'articles?limit=' + quantity;
+  const articlesOffset = `&offset=${offset}`;
+  const url = baseApiUrl + articlesQuantity + authorFilter + articlesOffset;
   return axios.get(url, header);
 }
 

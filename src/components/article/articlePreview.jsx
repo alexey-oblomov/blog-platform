@@ -14,7 +14,6 @@ import Chip from '@material-ui/core/Chip';
 import Paper from '@material-ui/core/Paper';
 import Skeleton from '@material-ui/lab/Skeleton';
 
-import {articlesLoad} from '../../redux/actions/actionCreators';
 import {
   favoriteArticleRequest,
   unfavoriteArticleRequest,
@@ -267,14 +266,7 @@ function mapStateToProps(state) {
   };
 }
 
-const mapDispatchToProps = dispatch => {
-  return {
-    setArticlesToState: (listArticles, articlesCount) =>
-      dispatch(articlesLoad(listArticles, articlesCount)),
-  };
-};
-
-export default connect(mapStateToProps, mapDispatchToProps)(Preview);
+export default connect(mapStateToProps)(Preview);
 
 const PreviewDiv = styled.div`
   width: 250px;

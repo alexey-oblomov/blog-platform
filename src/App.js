@@ -1,5 +1,4 @@
 import React, {Component} from 'react';
-import './App.css';
 import {connect} from 'react-redux';
 import {Route} from 'react-router-dom';
 
@@ -12,12 +11,9 @@ import {CreateArticlePageContainer} from './components/createArticle';
 import {EditArticlePageContainer} from './components/editArticle';
 import {Navbar} from './components/navbar';
 
-import {setAuthorized, setCurrentUserProfile, articlesLoad} from './redux/actions/actionCreators';
-import {
-  currentUserRequest,
-  loadAllArticlesRequest,
-  loadUserArticlesRequest,
-} from './services/serverApi.js';
+import {setCurrentUserProfile, setAuthorized} from './redux/actions/currentUser/createActions.js';
+
+import {currentUserRequest} from './services/serverApi.js';
 import {isAuth} from './services/localStorageApi.js';
 import {baseRoutePath} from './services/paths.js';
 
@@ -26,28 +22,14 @@ class App extends Component {
     const {setAuth, setCurrentUser} = this.props;
     if (isAuth()) {
       const response = await currentUserRequest();
-      const {user} = await response.data;
-      setCurrentUser(user);
-      setAuth(true);
-    }
-  };
-
-  getListArticles = async () => {
-    const {showMode, showQuantity, setArticlesToStore} = this.props;
-    if (showMode === '') {
-      const response = await loadAllArticlesRequest(showQuantity);
-      const {articles, articlesCount} = await response.data;
-      setArticlesToStore(articles, articlesCount);
-    } else {
-      const response = await loadUserArticlesRequest(showQuantity, showMode);
-      const {articles, articlesCount} = await response.data;
-      setArticlesToStore(articles, articlesCount);
+      const {user: currentUser} = await response.data;
+      setCurrentUser({currentUser});
+      setAuth({isAuthorized: true});
     }
   };
 
   componentDidMount() {
     this.updateCurrentUserInStore();
-    this.getListArticles();
   }
 
   render() {
@@ -71,19 +53,15 @@ class App extends Component {
 }
 
 const mapStateToProps = state => {
-  const {showQuantity} = state.articles;
   const {currentUser} = state.currentUser;
 
   return {
-    showQuantity,
     currentUser,
   };
 };
 
 const mapDispatchToProps = dispatch => {
   return {
-    setArticlesToStore: (articles, articlesCount) =>
-      dispatch(articlesLoad(articles, articlesCount)),
     setCurrentUser: user => dispatch(setCurrentUserProfile(user)),
     setAuth: auth => dispatch(setAuthorized(auth)),
   };
