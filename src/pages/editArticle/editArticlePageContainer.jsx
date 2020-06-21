@@ -2,8 +2,10 @@ import React from 'react';
 import {connect} from 'react-redux';
 import styled from 'styled-components';
 
-import {PersonalArea} from '../personalArea';
-import {EditArticleForm} from '../forms/editArticleForm';
+import {withAuth} from '../../services/hocs';
+import {PersonalArea} from '../../components/personalArea';
+import {LoginForm} from '../../components/forms/loginForm';
+import {EditArticleForm} from '../../components/forms/editArticleForm';
 
 function EditArticlePageContainer(props) {
   const {history, isAuthorized} = props;
@@ -12,13 +14,12 @@ function EditArticlePageContainer(props) {
     history.push('/blog-platform/login');
   }
 
-  const leftBlock = isAuthorized ? <PersonalArea history={history} /> : null;
-  const mainBlock = <EditArticleForm history={history} slug={slug} />;
+  const SideBar = withAuth(PersonalArea, LoginForm);
 
   return (
     <WrapDiv>
-      {leftBlock}
-      {mainBlock}
+      <SideBar history={history} />
+      <EditArticleForm history={history} slug={slug} />
     </WrapDiv>
   );
 }

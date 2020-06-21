@@ -31,10 +31,10 @@ export function signupRequest(regData) {
   return axios.post(url, regData);
 }
 
-export function getArticlesFromServerRequest(quantity, offset, username) {
-  const authorFilter = username ? '&author=' + username : '';
+export function getArticlesFromServerRequest(quantity, username, offset) {
   const articlesQuantity = 'articles?limit=' + quantity;
-  const articlesOffset = `&offset=${offset}`;
+  const authorFilter = username ? '&author=' + username : '';
+  const articlesOffset = offset ? `&offset=${offset}` : '';
   const url = baseApiUrl + articlesQuantity + authorFilter + articlesOffset;
   return axios.get(url, header);
 }
@@ -64,7 +64,7 @@ export function deleteArticleRequest(slug) {
   return axios.delete(url, header);
 }
 
-export function loadUserProfileRequest(username) {
+export function getUserProfileRequest(username) {
   const url = baseApiUrl + `profiles/${username}`;
   return axios.get(url, header);
 }

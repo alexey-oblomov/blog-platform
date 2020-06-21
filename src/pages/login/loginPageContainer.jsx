@@ -2,8 +2,10 @@ import React from 'react';
 import {connect} from 'react-redux';
 import styled from 'styled-components';
 
-import {LoginForm} from '../forms/loginForm';
-import {ListArticles} from '../listArticles';
+import {withAuth} from '../../services/hocs';
+import {LoginForm} from '../../components/forms/loginForm';
+import {PersonalArea} from '../../components/personalArea';
+import {ListArticles} from '../../components/listArticles';
 
 function LoginPageContainer(props) {
   const {history, isAuthorized} = props;
@@ -11,23 +13,20 @@ function LoginPageContainer(props) {
     history.push('/blog-platform');
   }
 
-  const leftBlock = isAuthorized ? null : <LoginForm history={history} />;
-  const mainBlock = <ListArticles history={history} />;
+  const SideBar = withAuth(PersonalArea, LoginForm);
 
   return (
     <WrapDiv>
-      {leftBlock}
-      {mainBlock}
+      <SideBar history={history} />
+      <ListArticles history={history} />
     </WrapDiv>
   );
 }
 
-function mapStateToProps(state) {
+const mapStateToProps = state => {
   const {isAuthorized} = state.currentUser;
-  return {
-    isAuthorized,
-  };
-}
+  return {isAuthorized};
+};
 
 export default connect(mapStateToProps)(LoginPageContainer);
 
@@ -35,4 +34,5 @@ const WrapDiv = styled.div`
   display: flex;
   margin-bottom: 15px;
   margin-top: 20px;
+  min-height: 800px;
 `;

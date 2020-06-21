@@ -11,9 +11,10 @@ import {Button} from '@material-ui/core';
 import Chip from '@material-ui/core/Chip';
 import Paper from '@material-ui/core/Paper';
 import Tooltip from '@material-ui/core/Tooltip';
+import CircularProgress from '@material-ui/core/CircularProgress';
 
 import {setCurrentMenuItem} from '../../redux/actions/personalArea/createActions.js';
-
+import {updateListArticles} from '../../redux/actions/articles/createActions.js';
 import {
   favoriteArticleRequest,
   unfavoriteArticleRequest,
@@ -22,20 +23,15 @@ import {
 import {baseRoutePath} from '../../services/paths.js';
 
 function ArticlePage(props) {
-  const [article, setArticle] = useState({
-    title: null,
-    author: {username: null},
-    body: null,
-    favorited: null,
-    favoritesCount: null,
-    tagList: [],
-  });
+  const [article, setArticle] = useState({});
 
   const getArticleFromStoreToState = async () => {
-    const {slug, listArticles} = props;
-    if (listArticles) {
+    const {slug, listArticles, history} = props;
+    if (listArticles.length !== 0) {
       const article = listArticles.find(item => item.slug === slug);
       setArticle(article);
+    } else {
+      history.push(baseRoutePath);
     }
   };
 
@@ -43,48 +39,32 @@ function ArticlePage(props) {
     const {setCurrentMenuItem} = props;
     getArticleFromStoreToState();
     setCurrentMenuItem('');
-  });
-
-  // useEffect(async () => {
-  //   const { slug } = props;
-  //   const response = await favoriteArticleRequest(slug);
-  //   const { article } = await response.data;
-  //   await setArticle(article);
-  // }, {});
-
-  // useEffect(async () => {
-  //   const { slug } = props;
-  //   const response = await unfavoriteArticleRequest(slug);
-  //   const { article } = await response.data;
-  //   await setArticle(article);
-  // }, {});
+  }, []);
 
   if (!article) {
-    return null;
+    return <CircularProgress />;
   }
 
-  const handleFavoriteChange = isFavorited => {
-    if (isFavorited) {
-      setUnfavorited();
+  const replaceArticleInStore = article => {
+    const {listArticles, updateListArticles} = props;
+    const idx = listArticles.findIndex(item => item.slug === article.slug);
+    listArticles.splice(idx, 1, article);
+    updateListArticles({listArticles});
+  };
+
+  const handleFavoriteToggle = async () => {
+    const {favorited, slug} = article;
+    if (favorited) {
+      const response = await unfavoriteArticleRequest(slug);
+      const {article} = response.data;
+      replaceArticleInStore(article);
+      setArticle(article);
     } else {
-      setFavorited();
+      const response = await favoriteArticleRequest(slug);
+      const {article} = response.data;
+      replaceArticleInStore(article);
+      setArticle(article);
     }
-  };
-
-  const setFavorited = async () => {
-    const {slug} = props;
-    const response = await favoriteArticleRequest(slug);
-    const {article} = await response.data;
-    console.log('article: ', article);
-    // await setArticle(article);
-  };
-
-  const setUnfavorited = async () => {
-    const {slug} = props;
-    const response = await unfavoriteArticleRequest(slug);
-    // const { article } = await response.data;
-    // console.log('article: ', article);
-    // await setArticle(article);
   };
 
   const handleToEditArticle = () => {
@@ -159,7 +139,7 @@ function ArticlePage(props) {
   const isModifed = createdAt === updatedAt ? false : true;
 
   const btnEdit =
-    isAuthorized && currentUser.username === author.username ? (
+    isAuthorized && author && currentUser.username === author.username ? (
       <ButtonDiv>
         <Button variant="contained" size="small" onClick={handleToEditArticle}>
           Редактировать
@@ -168,7 +148,7 @@ function ArticlePage(props) {
     ) : null;
 
   const btnDelete =
-    isAuthorized && currentUser.username === author.username ? (
+    isAuthorized && author && currentUser.username === author.username ? (
       <ButtonDiv>
         <Button variant="contained" size="small" onClick={handleDeleteArticle}>
           Удалить
@@ -180,7 +160,7 @@ function ArticlePage(props) {
     className: 'btnLike',
     color: 'primary',
     style: {fontSize: 30},
-    onClick: event => handleFavoriteChange(isFavorited),
+    onClick: handleFavoriteToggle,
   };
 
   const btnLike = () =>
@@ -209,7 +189,7 @@ function ArticlePage(props) {
 
       <MainSectionDiv>
         <TitleDiv>{title}</TitleDiv>
-        <AuthorDiv>{author.username}</AuthorDiv>
+        <AuthorDiv>{author ? author.username : null}</AuthorDiv>
 
         <CreateDateDiv>
           <span>Создано: </span>
@@ -319,6 +299,9 @@ const mapStateToProps = state => {
 const mapDispatchToProps = dispatch => {
   return {
     setCurrentMenuItem: item => dispatch(setCurrentMenuItem(item)),
+    updateListArticles: listArticles => {
+      dispatch(updateListArticles(listArticles));
+    },
   };
 };
 

@@ -10,7 +10,6 @@ import {Button} from '@material-ui/core';
 import TextField from '@material-ui/core/TextField';
 import {CustomizedInputPassword} from '../customInputPassword';
 
-// import {setAuthorized, setCurrentUserProfile} from '../../../redux/actions/actionCreators';
 import {
   setCurrentUserProfile,
   setAuthorized,

@@ -1,10 +1,11 @@
 import React from 'react';
-
 import {connect} from 'react-redux';
 import styled from 'styled-components';
 
-import {SignupForm} from '../forms/signupForm';
-import {ListArticles} from '../listArticles';
+import {withAuth} from '../../services/hocs';
+import {SignupForm} from '../../components/forms/signupForm';
+import {PersonalArea} from '../../components/personalArea';
+import {ListArticles} from '../../components/listArticles';
 
 function SignupPageContainer(props) {
   const {history, isAuthorized} = props;
@@ -12,13 +13,12 @@ function SignupPageContainer(props) {
     history.push('/blog-platform');
   }
 
-  const leftBlock = isAuthorized ? null : <SignupForm history={history} />;
-  const mainBlock = <ListArticles history={history} />;
+  const SideBar = withAuth(PersonalArea, SignupForm);
 
   return (
     <WrapDiv>
-      {leftBlock}
-      {mainBlock}
+      <SideBar history={history} />
+      <ListArticles history={history} />
     </WrapDiv>
   );
 }

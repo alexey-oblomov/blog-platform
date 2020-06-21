@@ -2,30 +2,26 @@ import React from 'react';
 import styled from 'styled-components';
 import {connect} from 'react-redux';
 
-import {PersonalArea} from '../personalArea';
-import LoginForm from '../forms/loginForm/loginForm.jsx';
-import UserProfile from './userProfile.jsx';
+import {withAuth} from '../../services/hocs';
+import {LoginForm} from '../../components/forms/loginForm';
+import {PersonalArea} from '../../components/personalArea';
+import UserProfile from '../../components/userProfile/userProfile';
 
 function UserProfilePageContainer(props) {
   const {username} = props.match.params;
-  const {history, isAuthorized} = props;
+  const {history} = props;
 
   const propsArticleUserProfile = {
     history,
     username,
   };
 
-  const leftBlock = isAuthorized ? (
-    <PersonalArea history={history} />
-  ) : (
-    <LoginForm history={history} />
-  );
-  const mainBlock = <UserProfile {...propsArticleUserProfile} />;
+  const SideBar = withAuth(PersonalArea, LoginForm);
 
   return (
     <WrapDiv>
-      {leftBlock}
-      {mainBlock}
+      <SideBar history={history} />
+      <UserProfile {...propsArticleUserProfile} />
     </WrapDiv>
   );
 }

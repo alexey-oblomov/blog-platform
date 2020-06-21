@@ -1,4 +1,4 @@
-import React, {Component} from 'react';
+import React from 'react';
 import styled from 'styled-components';
 
 import {connect} from 'react-redux';
@@ -10,124 +10,110 @@ import {
   setAuthorized,
 } from '../../redux/actions/currentUser/createActions.js';
 
-import {getArticlesFromServerRequest} from '../../services/serverApi';
 import {baseRoutePath, defaultAvatarUrl} from '../../services/paths.js';
 
-class PersonalArea extends Component {
-  updateListArticles = async () => {
-    const {filterByAuthor, showQuantity, setArticlesToStore, setArticlesCountToStore} = this.props;
-
-    const offset = 0;
-    const response = await getArticlesFromServerRequest(showQuantity, offset, filterByAuthor);
-    const {articles: listArticles, articlesCount} = await response.data;
-    setArticlesCountToStore({articlesCount});
-    setArticlesToStore({listArticles});
-  };
-
-  handleLogout = () => {
-    const {authorization, history, setCurrentUser} = this.props;
+function PersonalArea(props) {
+  const handleLogout = () => {
+    const {authorization, history, setCurrentUser} = props;
     authorization({isAuthorized: false});
     localStorage.clear();
-    setCurrentUser({});
+    setCurrentUser({currentUser: {}});
     history.push(`${baseRoutePath}/login`);
   };
 
-  getAllArticles = async () => {
-    const {setFilterByAuthor, history} = this.props;
+  const getAllArticles = async () => {
+    const {setFilterByAuthor, history} = props;
     const filterByAuthor = '';
     await setFilterByAuthor({filterByAuthor});
-    await this.updateListArticles();
     history.push(`${baseRoutePath}/login`);
   };
 
-  getMyArticles = async () => {
-    const {setFilterByAuthor, currentUser, history} = this.props;
+  const getMyArticles = async () => {
+    const {setFilterByAuthor, currentUser, history} = props;
     const {username} = currentUser;
     await setFilterByAuthor({filterByAuthor: username});
-    await this.updateListArticles();
     history.push(`${baseRoutePath}/login`);
   };
 
-  handleCreateArticle = () => {
-    const {history} = this.props;
+  const handleCreateArticle = () => {
+    const {history} = props;
     history.push(`${baseRoutePath}/add`);
   };
 
-  render() {
-    const {currentMenuItem} = this.props;
-    const notActiveStyle = {width: '275px', marginBottom: '7px'};
-    const activeStyle = {
-      border: '1px solid gray',
-      boxShadow: '0 0 4px 0 #34495e',
-      width: '275px',
-      marginBottom: '7px',
-    };
-    const {image, username, email, bio} = this.props.currentUser;
-    const avatarImage = image === null ? defaultAvatarUrl : image;
-    const info = bio === null ? '--' : bio;
-    return (
-      <ContainerDiv>
-        <HeadingDiv>Личный кабинет</HeadingDiv>
-        <UserInfoBlock>
-          <UserInfoMainSection>
-            <UserImg src={avatarImage} alt="" />
-            <UserNameAndEmailBlock>
-              {username} ({email})
-            </UserNameAndEmailBlock>
-          </UserInfoMainSection>
-          <UserBioDiv>Информация: {info}</UserBioDiv>
-        </UserInfoBlock>
+  const {currentMenuItem} = props;
+  const notActiveStyle = {width: '275px', marginBottom: '7px'};
+  const activeStyle = {
+    border: '1px solid gray',
+    boxShadow: '0 0 4px 0 #34495e',
+    width: '275px',
+    marginBottom: '7px',
+  };
+  const {image, username, email, bio} = props.currentUser;
+  const avatarImage = image === null ? defaultAvatarUrl : image;
+  const info = bio === null ? '--' : bio;
+  return (
+    <ContainerDiv>
+      <HeadingDiv>Личный кабинет</HeadingDiv>
+      <UserInfoBlock>
+        <UserInfoMainSection>
+          <UserImg src={avatarImage} alt="" />
+          <UserNameAndEmailBlock>
+            {username} ({email})
+          </UserNameAndEmailBlock>
+        </UserInfoMainSection>
+        <UserBioDiv>Информация: {info}</UserBioDiv>
+      </UserInfoBlock>
 
-        <ButtonBlockiv>
-          <Button
-            variant="contained"
-            size="small"
-            onClick={this.getAllArticles}
-            className="active"
-            style={currentMenuItem === 'showAllArticles' ? activeStyle : notActiveStyle}
-          >
-            Показать все статьи
-          </Button>
-          <Button
-            variant="contained"
-            size="small"
-            onClick={this.getMyArticles}
-            style={currentMenuItem === 'showMyArticles' ? activeStyle : notActiveStyle}
-          >
-            Показать все мои статьи
-          </Button>
+      <ButtonBlockiv>
+        <Button
+          variant="contained"
+          size="small"
+          onClick={getAllArticles}
+          className="active"
+          style={currentMenuItem === 'showAllArticles' ? activeStyle : notActiveStyle}
+        >
+          Показать все статьи
+        </Button>
+        <Button
+          variant="contained"
+          size="small"
+          onClick={getMyArticles}
+          style={currentMenuItem === 'showMyArticles' ? activeStyle : notActiveStyle}
+        >
+          Показать все мои статьи
+        </Button>
 
-          <Button
-            variant="contained"
-            size="small"
-            onClick={this.handleCreateArticle}
-            style={currentMenuItem === 'createArticle' ? activeStyle : notActiveStyle}
-          >
-            Добавить статью
-          </Button>
+        <Button
+          variant="contained"
+          size="small"
+          onClick={handleCreateArticle}
+          style={currentMenuItem === 'createArticle' ? activeStyle : notActiveStyle}
+        >
+          Добавить статью
+        </Button>
 
-          <Button
-            variant="contained"
-            size="small"
-            color="primary"
-            onClick={this.handleLogout}
-            style={{
-              width: '275px',
-              marginBottom: '5px',
-            }}
-          >
-            Выход
-          </Button>
-        </ButtonBlockiv>
-      </ContainerDiv>
-    );
-  }
+        <Button
+          variant="contained"
+          size="small"
+          color="primary"
+          onClick={handleLogout}
+          style={{
+            width: '275px',
+            marginBottom: '5px',
+          }}
+        >
+          Выход
+        </Button>
+      </ButtonBlockiv>
+    </ContainerDiv>
+  );
 }
 
 const mapStateToProps = state => {
-  const {showQuantity, filterByAuthor} = state.articles;
-  const {currentUser} = state.currentUser;
-  const {currentMenuItem} = state.personalArea;
+  const {articles, currentUser: user, personalArea} = state;
+  const {showQuantity, filterByAuthor} = articles;
+  const {currentUser} = user;
+  const {currentMenuItem} = personalArea;
 
   return {
     showQuantity,

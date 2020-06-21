@@ -1,4 +1,4 @@
-import React, {Component} from 'react';
+import React, {useState, useEffect} from 'react';
 import {connect} from 'react-redux';
 import styled from 'styled-components';
 import {uniqueId} from 'lodash';
@@ -22,29 +22,25 @@ const SignUpSchema = Yup.object().shape({
   body: Yup.string().required('Обязательное поле'),
 });
 
-class EditArticleForm extends Component {
-  state = {
-    article: {
-      title: '',
-      description: '',
-      tagList: [],
-      body: '',
-      author: {username: ''},
-    },
-  };
+function EditArticleForm(props) {
+  const [article, setArticle] = useState({
+    title: '',
+    description: '',
+    tagList: [],
+    body: '',
+    author: {username: ''},
+  });
 
-  getArticleFromStoreToState = async headers => {
-    const {slug, listArticles} = this.props;
+  const getArticleFromStoreToState = async headers => {
+    const {slug, listArticles} = props;
     if (listArticles) {
       const article = listArticles.find(item => item.slug === slug);
-      this.setState({
-        article,
-      });
+      setArticle(article);
     } else return;
   };
 
-  handleSubmit = async values => {
-    const {slug, history} = this.props;
+  const handleSubmit = async values => {
+    const {slug, history} = props;
     const {title, description, body, tagList} = values;
     const updArticle = {
       article: {title, description, body, tagList},
@@ -53,224 +49,221 @@ class EditArticleForm extends Component {
     history.push(baseRoutePath);
   };
 
-  handleDeleteArticle = async () => {
-    const {slug, history} = this.props;
+  const handleDeleteArticle = async () => {
+    const {slug, history} = props;
     const response = await deleteArticleRequest(slug);
     if (response.status === 200) {
       history.push(baseRoutePath);
     }
   };
 
-  componentDidMount() {
-    const {setCurrentMenuItem} = this.props;
-    this.getArticleFromStoreToState();
+  useEffect(() => {
+    const {setCurrentMenuItem} = props;
+    getArticleFromStoreToState();
     setCurrentMenuItem('');
+  }, []);
+
+  if (!article) {
+    return null;
   }
+  const {title, description, body, tagList} = article;
+  const initialValues = {
+    title,
+    description,
+    body,
+    tagList,
+  };
 
-  render() {
-    const {article} = this.state;
-    if (!article) {
-      return null;
-    }
-    const {title, description, body, tagList} = article;
-    const initialValues = {
-      title,
-      description,
-      body,
-      tagList,
-    };
+  return (
+    <Formik
+      enableReinitialize={true}
+      initialValues={initialValues}
+      onSubmit={handleSubmit}
+      validationSchema={SignUpSchema}
+    >
+      {({
+        values,
+        handleChange,
+        handleBlur,
+        errors,
+        touched,
+        dirty,
+        isValid,
+        setFieldValue,
+        setValues,
+      }) => {
+        const inputTitleProps = {
+          size: 'small',
+          name: 'title',
+          as: 'input',
+          component: TextField,
+          label: 'Название статьи',
+          variant: 'outlined',
+          error: errors.title,
+          initialvalue: initialValues.title,
+          value: values.title,
+          onChange: handleChange('title'),
+          onBlur: handleBlur('title'),
+          width: 225,
+          required: true,
+        };
 
-    return (
-      <Formik
-        enableReinitialize={true}
-        initialValues={initialValues}
-        onSubmit={this.handleSubmit}
-        validationSchema={SignUpSchema}
-      >
-        {({
-          values,
-          handleChange,
-          handleBlur,
-          errors,
-          touched,
-          dirty,
-          isValid,
-          setFieldValue,
-          setValues,
-        }) => {
-          const inputTitleProps = {
-            size: 'small',
-            name: 'title',
-            as: 'input',
-            component: TextField,
-            label: 'Название статьи',
-            variant: 'outlined',
-            error: errors.title,
-            initialvalue: initialValues.title,
-            value: values.title,
-            onChange: handleChange('title'),
-            onBlur: handleBlur('title'),
-            width: 225,
-            required: true,
-          };
+        const inputDescriptionProps = {
+          size: 'small',
+          name: 'description',
+          as: 'input',
+          component: TextField,
+          label: 'Краткое описание',
+          variant: 'outlined',
+          error: errors.description,
+          value: values.description,
+          onChange: handleChange('description'),
+          onBlur: handleBlur('description'),
+          width: '225',
+        };
 
-          const inputDescriptionProps = {
-            size: 'small',
-            name: 'description',
-            as: 'input',
-            component: TextField,
-            label: 'Краткое описание',
-            variant: 'outlined',
-            error: errors.description,
-            value: values.description,
-            onChange: handleChange('description'),
-            onBlur: handleBlur('description'),
-            width: '225',
-          };
+        const inputTagProps = {
+          size: 'small',
+          name: 'tag',
+          as: 'input',
+          component: TextField,
+          label: 'Тег',
+          variant: 'outlined',
+          error: touched.tag && Boolean(errors.tag),
+          value: values.tag,
+          onChange: handleChange('tag'),
+          onBlur: handleBlur('tag'),
+          width: '225',
+        };
 
-          const inputTagProps = {
-            size: 'small',
-            name: 'tag',
-            as: 'input',
-            component: TextField,
-            label: 'Тег',
-            variant: 'outlined',
-            error: touched.tag && Boolean(errors.tag),
-            value: values.tag,
-            onChange: handleChange('tag'),
-            onBlur: handleBlur('tag'),
-            width: '225',
-          };
+        const inputBodyProps = {
+          size: 'small',
+          name: 'body',
+          as: 'input',
+          component: TextField,
+          label: 'Текст статьи',
+          variant: 'outlined',
+          error: errors.body,
+          value: values.body,
+          onChange: handleChange('body'),
+          onBlur: handleBlur('body'),
+          rows: '10',
+          width: '225',
+          required: true,
+        };
 
-          const inputBodyProps = {
-            size: 'small',
-            name: 'body',
-            as: 'input',
-            component: TextField,
-            label: 'Текст статьи',
-            variant: 'outlined',
-            error: errors.body,
-            value: values.body,
-            onChange: handleChange('body'),
-            onBlur: handleBlur('body'),
-            rows: '10',
-            width: '225',
-            required: true,
-          };
+        const buttonAddTagProps = {
+          variant: 'contained',
+          size: 'small',
+          color: 'secondary',
+          onClick: () => {
+            if (values.tag && values.tag.trim()) {
+              values.tagList.push(values.tag);
+              setFieldValue('tag', '');
+            }
+          },
+        };
 
-          const buttonAddTagProps = {
-            variant: 'contained',
-            size: 'small',
-            color: 'secondary',
-            onClick: () => {
-              if (values.tag.trim()) {
-                values.tagList.push(values.tag);
-                setFieldValue('tag', '');
-              }
-            },
-          };
+        const buttonEditArticleProps = {
+          variant: 'contained',
+          size: 'small',
+          color: 'primary',
+          disabled: !dirty || !isValid,
+          type: 'submit',
+        };
 
-          const buttonEditArticleProps = {
-            variant: 'contained',
-            size: 'small',
-            color: 'primary',
-            disabled: !dirty || !isValid,
-            type: 'submit',
-          };
+        const buttonDeleteArticleProps = {
+          variant: 'contained',
+          size: 'small',
+          onClick: handleDeleteArticle,
+        };
 
-          const buttonDeleteArticleProps = {
-            variant: 'contained',
-            size: 'small',
-            onClick: this.handleDeleteArticle,
-          };
+        const paperStyle = {
+          display: 'flex',
+          justifyContent: 'flex-start',
+          flexWrap: 'wrap',
+          listStyle: 'none',
+          minHeight: '45px',
+        };
 
-          const paperStyle = {
-            display: 'flex',
-            justifyContent: 'flex-start',
-            flexWrap: 'wrap',
-            listStyle: 'none',
-            minHeight: '45px',
-          };
+        const paperProps = {
+          component: 'ul',
+          elevation: 0,
+          style: paperStyle,
+        };
 
-          const paperProps = {
-            component: 'ul',
-            elevation: 0,
-            style: paperStyle,
-          };
+        const chipStyle = {maxWidth: '120px', overflow: 'hidden'};
+        const liStyle = {margin: '5px'};
 
-          const chipStyle = {maxWidth: '120px', overflow: 'hidden'};
-          const liStyle = {margin: '5px'};
+        return (
+          <ContainerDiv>
+            <HeadingDiv>Редактировать статью</HeadingDiv>
+            <Form>
+              <WrapperDiv>
+                <InputDiv>
+                  <Field {...inputTitleProps} />
+                  <ErrorDiv>{touched.title ? errors.title : ''}</ErrorDiv>
+                </InputDiv>
 
-          return (
-            <ContainerDiv>
-              <HeadingDiv>Редактировать статью</HeadingDiv>
-              <Form>
-                <WrapperDiv>
-                  <InputDiv>
-                    <Field {...inputTitleProps} />
-                    <ErrorDiv>{touched.title ? errors.title : ''}</ErrorDiv>
-                  </InputDiv>
+                <InputDiv>
+                  <Field {...inputDescriptionProps} />
+                  <ErrorDiv>{touched.description ? errors.description : ''}</ErrorDiv>
+                </InputDiv>
 
-                  <InputDiv>
-                    <Field {...inputDescriptionProps} />
-                    <ErrorDiv>{touched.description ? errors.description : ''}</ErrorDiv>
-                  </InputDiv>
-
-                  <InputDiv>
-                    <Field {...inputTagProps} />
-                    <ButtonBlockDiv>
-                      <Button {...buttonAddTagProps}>Добавить тег</Button>
-                    </ButtonBlockDiv>
-                  </InputDiv>
-
-                  <FieldArray
-                    name="tagList"
-                    render={() => (
-                      <TagsListDiv>
-                        <Paper {...paperProps}>
-                          {values.tagList.map(tag => {
-                            return (
-                              <li key={uniqueId()} style={liStyle}>
-                                <Chip
-                                  label={tag}
-                                  onDelete={() => {
-                                    setValues({
-                                      ...values,
-                                      tagList: values.tagList.filter(item => item !== tag),
-                                    });
-                                  }}
-                                  style={chipStyle}
-                                />
-                              </li>
-                            );
-                          })}
-                        </Paper>
-                      </TagsListDiv>
-                    )}
-                  />
-                  {touched.tagList ? errors.tagList : ''}
-
-                  <InputTextDiv>
-                    <TextareaAutosize {...inputBodyProps} />
-                    <ErrorDiv>{touched.body ? errors.body : ''}</ErrorDiv>
-                  </InputTextDiv>
-
+                <InputDiv>
+                  <Field {...inputTagProps} />
                   <ButtonBlockDiv>
-                    <ButtonDiv>
-                      <Button {...buttonEditArticleProps}>Редактировать</Button>
-                    </ButtonDiv>
-                    <ButtonDiv>
-                      <Button {...buttonDeleteArticleProps}>Удалить статью</Button>
-                    </ButtonDiv>
+                    <Button {...buttonAddTagProps}>Добавить тег</Button>
                   </ButtonBlockDiv>
-                </WrapperDiv>
-              </Form>
-            </ContainerDiv>
-          );
-        }}
-      </Formik>
-    );
-  }
+                </InputDiv>
+
+                <FieldArray
+                  name="tagList"
+                  render={() => (
+                    <TagsListDiv>
+                      <Paper {...paperProps}>
+                        {values.tagList.map(tag => {
+                          return (
+                            <li key={uniqueId()} style={liStyle}>
+                              <Chip
+                                label={tag}
+                                onDelete={() => {
+                                  setValues({
+                                    ...values,
+                                    tagList: values.tagList.filter(item => item !== tag),
+                                  });
+                                }}
+                                style={chipStyle}
+                              />
+                            </li>
+                          );
+                        })}
+                      </Paper>
+                    </TagsListDiv>
+                  )}
+                />
+                {touched.tagList ? errors.tagList : ''}
+
+                <InputTextDiv>
+                  <TextareaAutosize {...inputBodyProps} />
+                  <ErrorDiv>{touched.body ? errors.body : ''}</ErrorDiv>
+                </InputTextDiv>
+
+                <ButtonBlockDiv>
+                  <ButtonDiv>
+                    <Button {...buttonEditArticleProps}>Редактировать</Button>
+                  </ButtonDiv>
+                  <ButtonDiv>
+                    <Button {...buttonDeleteArticleProps}>Удалить статью</Button>
+                  </ButtonDiv>
+                </ButtonBlockDiv>
+              </WrapperDiv>
+            </Form>
+          </ContainerDiv>
+        );
+      }}
+    </Formik>
+  );
 }
 
 const ContainerDiv = styled.div`
