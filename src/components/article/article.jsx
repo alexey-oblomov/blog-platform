@@ -176,7 +176,7 @@ function ArticlePage(props) {
       )
     ) : (
       <Tooltip title="Для возможности лайкать необходимо авторизоваться">
-        <FavoriteBorderIcon {...btnLikeProps} />
+        <FavoriteBorderIcon />
       </Tooltip>
     );
 

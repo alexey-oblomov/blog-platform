@@ -5,9 +5,9 @@ import {connect} from 'react-redux';
 import {withAuth} from '../../services/hocs';
 import {LoginForm} from '../../components/forms/loginForm';
 import {PersonalArea} from '../../components/personalArea';
-import UserProfile from '../../components/userProfile/userProfile';
+import AuthorProfile from '../../components/authorProfile/authorProfile';
 
-function UserProfilePageContainer(props) {
+function AuthorProfilePageContainer(props) {
   const {username} = props.match.params;
   const {history} = props;
 
@@ -21,7 +21,7 @@ function UserProfilePageContainer(props) {
   return (
     <WrapDiv>
       <SideBar history={history} />
-      <UserProfile {...propsArticleUserProfile} />
+      <AuthorProfile {...propsArticleUserProfile} />
     </WrapDiv>
   );
 }
@@ -40,4 +40,4 @@ const WrapDiv = styled.div`
   min-height: 800px;
 `;
 
-export default connect(mapStateToProps)(UserProfilePageContainer);
+export default connect(mapStateToProps)(AuthorProfilePageContainer);

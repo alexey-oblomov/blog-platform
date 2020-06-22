@@ -23,8 +23,8 @@ function HomePageContainer(props) {
   );
 }
 
-const mapStateToProps = state => {
-  const {isAuthorized} = state.currentUser;
+const mapStateToProps = ({currentUser}) => {
+  const {isAuthorized} = currentUser;
   return {isAuthorized};
 };
 

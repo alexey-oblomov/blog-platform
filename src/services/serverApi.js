@@ -39,11 +39,6 @@ export function getArticlesFromServerRequest(quantity, username, offset) {
   return axios.get(url, header);
 }
 
-// export function loadArticleRequest(slug) {
-//   const url = baseApiUrl + `articles/${slug}`;
-//   return axios.get(url, header);
-// }
-
 export function favoriteArticleRequest(slug) {
   const url = baseApiUrl + `articles/${slug}/favorite`;
   return axios.post(url, null, header);

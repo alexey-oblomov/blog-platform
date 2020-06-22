@@ -10,7 +10,7 @@ import {setCurrentMenuItem} from '../../redux/actions/personalArea/createActions
 import {baseRoutePath, defaultAvatarUrl} from '../../services/paths.js';
 import {loadAuthorProfile} from '../../redux/actions/authorProfile/createActions';
 
-function UserProfile(props) {
+function AuthorProfile(props) {
   const handleGetUserArticles = username => {
     const {setFilterByAuthor, history, setCurrentMenuItem} = props;
     const filterByAuthor = username;
@@ -86,7 +86,7 @@ const mapDispatchToProps = dispatch => {
   };
 };
 
-export default connect(mapStateToProps, mapDispatchToProps)(UserProfile);
+export default connect(mapStateToProps, mapDispatchToProps)(AuthorProfile);
 
 const ContainerDiv = styled.div`
   display: flex;

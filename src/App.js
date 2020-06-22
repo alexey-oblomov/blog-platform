@@ -6,7 +6,7 @@ import {HomePageContainer} from './pages/home/';
 import {SignupPageContainer} from './pages/signup/';
 import {LoginPageContainer} from './pages/login/';
 import {ArticlePageContainer} from './pages/article/';
-import {UserProfilePageContainer} from './pages/user';
+import {authorProfilePageContainer} from './pages/authorProfile';
 import {CreateArticlePageContainer} from './pages/createArticle';
 import {EditArticlePageContainer} from './pages/editArticle';
 import {Navbar} from './components/navbar';
@@ -40,7 +40,11 @@ function App(props) {
       <Route path={`${baseRoutePath}/login`} component={LoginPageContainer} />
       <Route path={`${baseRoutePath}/add`} component={CreateArticlePageContainer} />
       <Route exact path={`${baseRoutePath}/articles/:slug`} component={ArticlePageContainer} />
-      <Route exact path={`${baseRoutePath}/user/:username`} component={UserProfilePageContainer} />
+      <Route
+        exact
+        path={`${baseRoutePath}/user/:username`}
+        component={authorProfilePageContainer}
+      />
       <Route path={`${baseRoutePath}/articles/:slug/edit`} component={EditArticlePageContainer} />
     </div>
   );
