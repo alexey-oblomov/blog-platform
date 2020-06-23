@@ -13,7 +13,7 @@ import {CustomizedInputPassword} from '../customInputPassword';
 import {
   setCurrentUserProfile,
   setAuthorized,
-} from '../../../redux/actions/currentUser/createActions.js';
+} from '../../../redux/actions/currentUser/createActions';
 import {loginRequest, signupRequest} from '../../../services/serverApi';
 import {setTokenToLocalStorage} from '../../../services/localStorageApi.js';
 import {baseRoutePath} from '../../../services/paths.js';
@@ -56,11 +56,11 @@ function SignupForm(props) {
         };
 
         const loginResponse = await loginRequest(loginData);
-        const {user} = await loginResponse.data;
-        const {token} = await user;
+        const {user: currentUser} = await loginResponse.data;
+        const {token} = await currentUser;
         await setTokenToLocalStorage(token);
-        await setCurrentUser(user);
-        await setAuth(true);
+        await setCurrentUser({currentUser});
+        await setAuth({isAuthorized: true});
         history.push(baseRoutePath);
       }
     } catch (error) {

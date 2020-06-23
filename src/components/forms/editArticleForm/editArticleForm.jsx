@@ -195,6 +195,23 @@ function EditArticleForm(props) {
         const chipStyle = {maxWidth: '120px', overflow: 'hidden'};
         const liStyle = {margin: '5px'};
 
+        const tags = values.tagList.map(tag => {
+          return (
+            <li key={uniqueId()} style={liStyle}>
+              <Chip
+                label={tag}
+                onDelete={() => {
+                  setValues({
+                    ...values,
+                    tagList: values.tagList.filter(item => item !== tag),
+                  });
+                }}
+                style={chipStyle}
+              />
+            </li>
+          );
+        });
+
         return (
           <ContainerDiv>
             <HeadingDiv>Редактировать статью</HeadingDiv>
@@ -221,24 +238,7 @@ function EditArticleForm(props) {
                   name="tagList"
                   render={() => (
                     <TagsListDiv>
-                      <Paper {...paperProps}>
-                        {values.tagList.map(tag => {
-                          return (
-                            <li key={uniqueId()} style={liStyle}>
-                              <Chip
-                                label={tag}
-                                onDelete={() => {
-                                  setValues({
-                                    ...values,
-                                    tagList: values.tagList.filter(item => item !== tag),
-                                  });
-                                }}
-                                style={chipStyle}
-                              />
-                            </li>
-                          );
-                        })}
-                      </Paper>
+                      <Paper {...paperProps}>{tags}</Paper>
                     </TagsListDiv>
                   )}
                 />

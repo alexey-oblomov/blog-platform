@@ -219,7 +219,7 @@ function ArticlePage(props) {
 const ContainerDiv = styled.div`
   display: flex;
   flex-direction: column;
-  min-width: 840px;
+  min-width: 820px;
   max-width: 950px;
   min-height: 800px;
   border: 1px solid gray;

@@ -58,7 +58,8 @@ function PersonalArea(props) {
         <UserInfoMainSection>
           <UserImg src={avatarImage} alt="" />
           <UserNameAndEmailBlock>
-            {username} ({email})
+            <div>{username}</div>
+            <div>({email})</div>
           </UserNameAndEmailBlock>
         </UserInfoMainSection>
         <UserBioDiv>Информация: {info}</UserBioDiv>
@@ -182,6 +183,7 @@ const UserNameAndEmailBlock = styled.div`
   padding: 10px;
   padding-top: 5px;
   margin-bottom: 10px;
+  word-break: break-all;
 `;
 
 const ButtonBlockiv = styled.div`
