@@ -4,6 +4,8 @@
 
 Демонстрация: https://alexey-oblomov.github.io/blog-platform
 
+![alt text](/screenshot.png)
+
 ## Описание задачи
 
 Реализация типичной CRUD (create-read-update-delete) задачи на примере статей.
