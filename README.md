@@ -30,6 +30,12 @@ Cтраницы:
 
 Используемые инструменты:
 
+    redux - стейт-менеджер
     date-fns - библиотека для работы с датами, более современный аналог moment.js
     react-router - навигация по приложению
     material-ui - библиотека React-компонентов
+
+API:
+
+    Корневой URL для API: <a href="https://conduit.productionready.io/api/">https://conduit.productionready.io/api/</a>
+    Документация по апи: <a href="https://github.com/gothinkster/realworld/tree/master/api">Здесь</a>
