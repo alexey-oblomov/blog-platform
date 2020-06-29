@@ -2,6 +2,8 @@ import React from 'react';
 import {connect} from 'react-redux';
 import styled from 'styled-components';
 
+import Grid from '@material-ui/core/Grid';
+
 import {withAuth} from '../../services/hocs';
 import {LoginForm} from '../../components/forms/loginForm';
 import {PersonalArea} from '../../components/personalArea';
