@@ -4,8 +4,6 @@
 
 Демонстрация: https://alexey-oblomov.github.io/blog-platform
 
-<!-- ![alt text](/screenshot.png) -->
-
 [<img src="/screenshot.png">](https://alexey-oblomov.github.io/blog-platform)
 
 ## Описание задачи
