@@ -54,7 +54,6 @@ function SignupForm(props) {
             password,
           },
         };
-
         const loginResponse = await loginRequest(loginData);
         const {user: currentUser} = await loginResponse.data;
         const {token} = await currentUser;

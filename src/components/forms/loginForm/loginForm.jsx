@@ -23,8 +23,19 @@ function LoginForm(props) {
     email: '',
   };
 
-  const handleSubmit = async (values, {setFieldError}) => {
+  const setAuthDateAndRedirect = async loginResponse => {
     const {setAuth, history, setCurrentUser} = props;
+    if (loginResponse.status === 200) {
+      const {user: currentUser} = await loginResponse.data;
+      const {token} = await currentUser;
+      await setTokenToLocalStorage(token);
+      await setCurrentUser({currentUser});
+      await setAuth({isAuthorized: true});
+      history.push(baseRoutePath);
+    }
+  };
+
+  const handleSubmit = async (values, {setFieldError}) => {
     const {email, password} = values;
     const loginData = {
       user: {
@@ -32,17 +43,9 @@ function LoginForm(props) {
         password,
       },
     };
-
     try {
       const loginResponse = await loginRequest(loginData);
-      if (loginResponse.status === 200) {
-        const {user: currentUser} = await loginResponse.data;
-        const {token} = await currentUser;
-        await setTokenToLocalStorage(token);
-        await setCurrentUser({currentUser});
-        await setAuth({isAuthorized: true});
-        history.push(baseRoutePath);
-      }
+      await setAuthDateAndRedirect(loginResponse);
     } catch (error) {
       setFieldError('email', 'Некорректные данные');
       setFieldError('password', ' ');
@@ -51,69 +54,95 @@ function LoginForm(props) {
 
   const linkStyle = {color: '#3a3833', marginTop: '20px'};
 
+  const handleTestEntrance = async () => {
+    const loginData = {
+      user: {
+        email: 'test-account@test.test',
+        password: '11111111',
+      },
+    };
+    try {
+      const loginResponse = await loginRequest(loginData);
+      await setAuthDateAndRedirect(loginResponse);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
   return (
-    <Formik initialValues={initialValues} onSubmit={handleSubmit}>
-      {({values, handleChange, handleBlur, errors, touched, dirty, isValid}) => {
-        const inputEmailProps = {
-          size: 'small',
-          name: 'email',
-          as: 'input',
-          component: TextField,
-          value: values.email,
-          label: 'Электронная почта',
-          variant: 'outlined',
-          onChange: handleChange('email'),
-          error: touched.email && Boolean(errors.email),
-          onBlur: handleBlur('email'),
-        };
+    <>
+      <Formik initialValues={initialValues} onSubmit={handleSubmit}>
+        {({values, handleChange, handleBlur, errors, touched, dirty, isValid}) => {
+          const inputEmailProps = {
+            size: 'small',
+            name: 'email',
+            as: 'input',
+            component: TextField,
+            value: values.email,
+            label: 'Электронная почта',
+            variant: 'outlined',
+            onChange: handleChange('email'),
+            error: touched.email && Boolean(errors.email),
+            onBlur: handleBlur('email'),
+          };
 
-        const passwordProps = {
-          name: 'password',
-          errors,
-          values,
-          touched,
-          onChange: handleChange('password'),
-          onBlur: handleBlur('password'),
-          label: 'Пароль',
-          labelWidth: 65,
-          required: true,
-        };
+          const passwordProps = {
+            name: 'password',
+            errors,
+            values,
+            touched,
+            onChange: handleChange('password'),
+            onBlur: handleBlur('password'),
+            label: 'Пароль',
+            labelWidth: 65,
+            required: true,
+          };
 
-        return (
-          <ContainerDiv>
-            <Form>
-              <WrapperDiv>
-                <HeadingDiv>
-                  Авторизация
-                  <ErrorDiv>{touched.email ? errors.email : ''}</ErrorDiv>
-                </HeadingDiv>
+          return (
+            <ContainerDiv>
+              <Form>
+                <WrapperDiv>
+                  <HeadingDiv>
+                    Авторизация
+                    <ErrorDiv>{touched.email ? errors.email : ''}</ErrorDiv>
+                  </HeadingDiv>
 
-                <InputDiv>
-                  <Field {...inputEmailProps} />
-                </InputDiv>
+                  <InputDiv>
+                    <Field {...inputEmailProps} />
+                  </InputDiv>
 
-                <InputDiv>
-                  <CustomizedInputPassword {...passwordProps} />
-                </InputDiv>
+                  <InputDiv>
+                    <CustomizedInputPassword {...passwordProps} />
+                  </InputDiv>
 
-                <Button
-                  variant="contained"
-                  size="small"
-                  color="primary"
-                  disabled={!dirty || !isValid}
-                  type="submit"
-                >
-                  Войти
-                </Button>
-                <Link to="/blog-platform/signup" style={linkStyle}>
-                  Регистрация
-                </Link>
-              </WrapperDiv>
-            </Form>
-          </ContainerDiv>
-        );
-      }}
-    </Formik>
+                  <Button
+                    variant="contained"
+                    size="small"
+                    color="primary"
+                    disabled={!dirty || !isValid}
+                    type="submit"
+                  >
+                    Войти
+                  </Button>
+                  <Link to="/blog-platform/signup" style={linkStyle}>
+                    Регистрация
+                  </Link>
+                  <Button
+                    variant="contained"
+                    size="small"
+                    color="primary"
+                    style={{marginTop: '55px'}}
+                    onClick={handleTestEntrance}
+                  >
+                    Демонстрационный вход с тестового аккаунта
+                  </Button>
+                </WrapperDiv>
+              </Form>
+            </ContainerDiv>
+          );
+        }}
+      </Formik>
+    </>
   );
 }
 
