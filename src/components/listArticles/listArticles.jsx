@@ -38,7 +38,6 @@ function ListArticles(props) {
     if (pageNumber === lastPageNumber) {
       numberArticlesToDisplay = numberArticlesOnLastPage;
     }
-
     setArticlesToStoreAsync(numberArticlesToDisplay, filterByAuthor, offsetArticles);
   };
 
@@ -126,8 +125,8 @@ const mapStateToProps = state => {
 
 const mapDispatchToProps = dispatch => {
   return {
-    setArticlesToStoreAsync: (numberArticlesToDisplay, filterByAuthor) => {
-      dispatch(loadArticles(numberArticlesToDisplay, filterByAuthor));
+    setArticlesToStoreAsync: (numberArticlesToDisplay, filterByAuthor, offsetArticles) => {
+      dispatch(loadArticles(numberArticlesToDisplay, filterByAuthor, offsetArticles));
     },
     setCurrentMenuItem: page => dispatch(setCurrentMenuItem(page)),
   };

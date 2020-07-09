@@ -17,6 +17,7 @@ export const loadArticlesFailure = createAction(LOAD_ARTICLES_FAILURE);
 
 export const loadArticles = (showQuantity, filterByAuthor, offsetArticles) => dispatch => {
   dispatch(loadArticlesStarted({isLoading: true}));
+
   getArticlesFromServerRequest(showQuantity, filterByAuthor, offsetArticles)
     .then(response => {
       const {articles: listArticles, articlesCount} = response.data;
