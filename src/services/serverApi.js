@@ -14,9 +14,8 @@ export const getAuthorizationHeader = () => {
   return header;
 };
 
-const header = getAuthorizationHeader();
-
 export function currentUserRequest() {
+  const header = getAuthorizationHeader();
   const url = baseApiUrl + 'user';
   return axios.get(url, header);
 }
@@ -32,6 +31,7 @@ export function signupRequest(regData) {
 }
 
 export function getArticlesFromServerRequest(quantity, username, offset) {
+  const header = getAuthorizationHeader();
   const articlesQuantity = 'articles?limit=' + quantity;
   const authorFilter = username ? '&author=' + username : '';
   const articlesOffset = offset ? `&offset=${offset}` : '';
@@ -40,31 +40,37 @@ export function getArticlesFromServerRequest(quantity, username, offset) {
 }
 
 export function favoriteArticleRequest(slug) {
+  const header = getAuthorizationHeader();
   const url = baseApiUrl + `articles/${slug}/favorite`;
   return axios.post(url, null, header);
 }
 
 export function unfavoriteArticleRequest(slug) {
+  const header = getAuthorizationHeader();
   const url = baseApiUrl + `articles/${slug}/favorite`;
   return axios.delete(url, header);
 }
 
 export function createArticleRequest(data) {
+  const header = getAuthorizationHeader();
   const url = baseApiUrl + 'articles';
   return axios.post(url, data, header);
 }
 
 export function deleteArticleRequest(slug) {
+  const header = getAuthorizationHeader();
   const url = baseApiUrl + `articles/${slug}`;
   return axios.delete(url, header);
 }
 
 export function getUserProfileRequest(username) {
+  const header = getAuthorizationHeader();
   const url = baseApiUrl + `profiles/${username}`;
   return axios.get(url, header);
 }
 
 export function updateArticleRequest(slug, data) {
+  const header = getAuthorizationHeader();
   const url = baseApiUrl + `articles/${slug}`;
   return axios.put(url, data, header);
 }
